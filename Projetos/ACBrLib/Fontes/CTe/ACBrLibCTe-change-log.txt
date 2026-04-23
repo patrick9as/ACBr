@@ -1,0 +1,204 @@
+{******************************************************************************}
+{ Projeto: Componentes ACBr                                                    }
+{  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
+{ mentos de Automação Comercial utilizados no Brasil                           }
+{                                                                              }
+{  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
+{ Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
+{                                                                              }
+{  Esta biblioteca é software livre; você pode redistribuí-la e/ou modificá-la }
+{ sob os termos da Licença Pública Geral Menor do GNU conforme publicada pela  }
+{ Free Software Foundation; tanto a versão 2.1 da Licença, ou (a seu critério) }
+{ qualquer versão posterior.                                                   }
+{                                                                              }
+{  Esta biblioteca é distribuída na expectativa de que seja útil, porém, SEM   }
+{ NENHUMA GARANTIA; nem mesmo a garantia implícita de COMERCIABILIDADE OU      }
+{ ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA. Consulte a Licença Pública Geral Menor}
+{ do GNU para mais detalhes. (Arquivo LICENÇA.TXT ou LICENSE.TXT)              }
+{                                                                              }
+{  Você deve ter recebido uma cópia da Licença Pública Geral Menor do GNU junto}
+{ com esta biblioteca; se não, escreva para a Free Software Foundation, Inc.,  }
+{ no endereço 59 Temple Street, Suite 330, Boston, MA 02111-1307 USA.          }
+{ Você também pode obter uma copia da licença em:                              }
+{ http://www.opensource.org/licenses/lgpl-license.php                          }
+{                                                                              }
+{ Daniel Simões de Almeida - daniel@projetoacbr.com.br - www.projetoacbr.com.br}
+{       Rua Coronel Aureliano de Camargo, 963 - Tatuí - SP - 18270-170         }
+{******************************************************************************}
+Agradecimentos:
+
+* Administradores:
+- Daniel Simões de Almeida
+
+{******************************************************************************
+|* ACBrLibCTe
+|*
+|* PROPÓSITO: Registro de Alterações
+******************************************************************************}
+
+Símbolo : Significado
+
+[+]     : Novo recurso
+[*]     : Recurso modificado/melhorado
+[-]     : Correção de Bug (assim esperamos)
+
+20/02/2026
+-- ACBrLibCTe, ACBrLibCTeConfig, ACBrLibCTeConsoleMT, ACBrLibCTeConsoleMTDemo, ACBrLibCTeDataModule, ACBrLibCTeTest, ACBrLibCTeTestCase --
+[+] ACBR-8588: Implementados projetos ConsoleMT e ConsoleMTDemo
+  Por: Renato Rubinho
+
+01/10/2025
+-- ACBrLibCTeBase.pas, ACBrLibCTeConfig.pas --
+[-] : Alteração da distribuição DFe de pcn para ACBrXMLDocuments.
+  Por: Alexandre de Paula / Italo Jurisato
+  
+24/04/2025
+-- ACBrCTeBase.php, ACBrCTeServicosMT.php, ACBrCTeServicosST.php --
+[+] #TK-6870: Adicionado checkbox no programa de exemplo de CTe em PHP para alimentar a propriedade SalvarEvento
+  Por: Renato Rubinho
+
+17/03/2025
+-- ACBrLibCTeDataModule.pas --
+[*] Implementada função B64CryptToString.
+    Por: Antonio Carlos Junior.
+
+27/01/2025
+-- Diversos --
+[+] #TK-4956-5: Implementados programas de exemplo em PHP da CTe ST e MT.
+  Por: Renato Rubinho
+
+12/09/2024
+-- ACBrLibCTeConfig --
+[*] #TK-5949: Altera o nome da propriedade para o correto.
+    Por: Daniel Moraes / Diego Folieni  
+
+10/09/2024
+--- ACBrLibCTeRespostas ---
+[*] #TK-5699: Adiciona NomeArq na resposta e também função para garantir que sempre devolva Chave do CTe 
+    no título da seção
+    Por: Diego Folieni
+
+14/08/2024
+--- ACBrLibCTeBase, ACBrLibCTeST, ACBrLibCTeMT,
+    ACBrLibCTeStaticImportST, ACBrLibCTeStaticImportMT, ACBrLibCTeRespostas ---
+[*] Ajustes para usar 'PAnsiChar' no lugar de 'PChar' e 'Integer' ao inves de 'LongInt'
+[*] Ajustes para usar 'ConverterStringEntrada' e 'ConverterStringSaida'
+    Por: Antonio Carlos Junior
+
+17/11/2023
+--- ACBrLibCTeBase, ACBrLibCTeST, ACBrLibCTeMT, ACBrLibCTeStaticImport, ACBrLibCTeStaticImportMT ---
+[+] Inclusão novos métodos: CTE_SalvarPDF e CTE_SalvarEventoPDF
+    Por: Antonio Carlos Junior	
+
+10/01/2023
+--- ACBrLibCTeBase ---
+[-] Correção para conversão das respostas com Erros, em ANSI, se assim estiver
+    configurado
+    Por: Antonio Carlos Junior
+
+30/11/2022
+--- ACBrLibCTeBase ---
+[*] Concatenação E.Message junto ao xMotivo para saber real motivo do Exception - #TK-3293
+	Por: Antonio Carlos Junior
+
+31/10/2022
+--- ACBrLibCTe ---
+[*] Leitura de arquivo de Distribuição DFe #TK-263
+    Por: Renato Rubinho
+
+20/07/2022
+--- ACBrLibCTe ---
+[*] Remoção de Warning @deprecated ref. ACBrUtils
+
+21/12/2021
+--- ACBrLibCTeDataModule ---
+[-] Correção para herença visual em Lazarus de "TLibDataModule"
+    (por: DSA)
+
+12/02/2021
+--- ACBrLiCTeBase ---
+[-] Correção no metodo Validar o mesmo estava fazendo o retorno errado.
+	Por: Rafael Dias
+
+29/10/2020
+--- ACBrLibCTeBase ---
+[-] Correção nos métodos de impressão de evento e inutilização para carregar o conteudo do xml quando passado o mesmo.
+	Por: Rafael Dias
+[-] Correção nos métodos de envio de email para carregar o conteudo do xml quando passado o mesmo.
+	Por: Rafael Dias
+
+07/09/2020
+--- ACBrLibCTEMT, ACBrLibCTEST ---
+[+] Removido o metodo CTE_ConfigImportar.
+   Por: Rafael Dias
+[+] Removido o metodo CTE_ConfigExportar.
+   Por: Rafael Dias
+[-] Removido o metodo CTE_ImportarConfig.
+   Por: Rafael Dias
+
+23/07/2020
+--- ACBrLibCTeRespostas ---
+[-] Corrigindo erro de compilação a propriedade CTeRetornoOS foi renomeada para CTeRetornoSincrono.
+    Por: Rafael Dias
+
+27/02/2020
+--- ACBrLibCTeClass ---
+[+] Adicionado o metodo um novo parametro ao metodo CTE_Consultar, para definir se deve ou não extrair os eventos, se houverem, da resposta.
+    Por: Rafael Dias
+
+17/01/2020
+--- ACBrLibCTeClass ---
+[+] Adicionado o metodo CTE_GetPath e CTE_GetPathEvento.
+    Por: Rafael Dias
+[-] Corrigido erro ao enviar email com PDF.
+    Por: Rafael Dias
+
+08/01/2020
+--- ACBrLibCTeClass ---
+[+] Adicionado o metodo CTE_GerarChave.
+   Por: Rafael Dias
+[+] Adicionado o metodo CTE_ObterCertificados.
+   Por: Rafael Dias
+
+03/01/2020
+--- ACBrLibCTeClass ---
+[+] Adicionado o metodo CTE_ImportarConfig.
+   Por: Rafael Dias
+
+30/12/2019
+--- ACBrLibCTeClass ---
+[+] Adicionado os metodos CTE_ObterIni e CTE_GravarIni.
+   Por: Rafael Dias
+
+19/12/2019
+--- ACBrLibCTeRespostas ---
+[+] Incluido a propriedade Protocolo no retorno do Envio.
+   Por: Italo Jurisato Junior
+
+26/11/2019
+--- ACBrLibCTeConfig ---
+[-] Corrigido erro na impressão ACBrLibCTe.
+    Por: Rafael Dias
+
+29/10/2019
+--- ACBrLibCTeConfig ---
+[-] Corrigido erro na criptografia da senha na ACBrLibCTe.
+    Por: Rafael Dias
+
+18/10/2019
+--- ACBrLibCTeClass ---
+[+] Adicionado metodos para carregamento dos eventos e limpeza da lista de evento.
+    Por: Rafael Dias
+[*] Varias correções nos metodos da biblioteca.
+    Por: Rafael Dias
+
+18/09/2018
+--- ACBrLibCTe ---
+[+] Inicio do projeto.
+   Por: Italo Jurisato Junior
+
+05/07/2018
+-- ACBrLibCTeRespostas --
+[*] Em algumas classes estava faltando definir que as propriedades são Published
+    em vez de Public.
+   Por: Italo Jurisato Junior
