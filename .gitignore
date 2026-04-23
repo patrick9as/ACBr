@@ -83,3 +83,8 @@ modules/
 
 .svn/
 Projetos/ACBrLib/Demos/
+
+/Lib/Delphi/LibD29/Win32
+
+ACBrInstall_Trunk2.ini
+log_Delphi_12_Athens_Win32.txt
