@@ -43,7 +43,6 @@ Símbolo : Significado
 [-]     : Correção de Bug (assim esperamos)
 
 
-<<<<<<< .mine
 23/04/2026
 -- ACBrNFSeXServicos.ini --
 [*] ACBr-9252 - Incluído o Params FormatarItemServicoNaoSeAplica para a cidade Barbacena/MG.
@@ -52,24 +51,6 @@ Símbolo : Significado
 [*] ACBr-9252 - Alteração na procedure Configuração para identificar mudança na formatação
     do ItemListaServico
    Por: SupraMAIS
-||||||| .r43547
-=======
-23/04/2026
--- ACBrNFSeXServicos.ini --
-[*] ACBr-9255 - A cidade Pouso Novo/RS trocou de provedor, agora é Tecnos.
-   Por: Windel Sistemas
--- PadraoNacional.GravarXml --
-[*] ACBr-9254 - Ajustes visando atender as regras para gerar os grupos: vTotTrib, pTotTrib,
-    indTotTrib e pTotTribSN.
-   Por: Italo Giurizzato Junior
--- ACBrNFSeXServicos.ini --
-[*] ACBr-9252 - Incluído o Params FormatarItemServicoNaoSeAplica para a cidade Barbacena/MG.
-   Por: SupraMAIS
--- WebISS.GravarXml --
-[*] ACBr-9252 - Alteração na procedure Configuração para identificar mudança na formatação
-    do ItemListaServico
-   Por: SupraMAIS
->>>>>>> .r45929
 
 22/04/2026
 -- ACBrNFSeXServicos.ini --
