@@ -1721,37 +1721,13 @@ end;
 
 function TNFSeW_PadraoNacional.GerarXMLTotalTributos: TACBrXmlNode;
 
-<<<<<<< .mine
-  if (NFSe.Servico.Valores.totTrib.pTotTribFed > 0) or
-     (NFSe.Servico.Valores.totTrib.pTotTribEst > 0) or
-     (NFSe.Servico.Valores.totTrib.pTotTribMun > 0) then
-    Result.AppendChild(GerarXMLPercentualTotalTributos)
-  else
-||||||| .r43547
-  if (NFSe.Servico.Valores.totTrib.vTotTribFed > 0) or
-     (NFSe.Servico.Valores.totTrib.vTotTribEst > 0) or
-     (NFSe.Servico.Valores.totTrib.vTotTribMun > 0) then
-    Result.AppendChild(GerarXMLValorTotalTributos)
-  else
-=======
   procedure PercentualouValor;
->>>>>>> .r45929
-    if (NFSe.OptanteSN = osnOptanteMEEPP) then
-      Result.AppendChild(AddNode(tcDe2, '#1', 'pTotTribSN', 1, 5, 1,
-                                   NFSe.Servico.Valores.totTrib.pTotTribSN, ''))
+  begin
+    if (NFSe.Servico.Valores.totTrib.pTotTribFed > 0) or
+       (NFSe.Servico.Valores.totTrib.pTotTribEst > 0) or
+       (NFSe.Servico.Valores.totTrib.pTotTribMun > 0) then
+      Result.AppendChild(GerarXMLPercentualTotalTributos)
     else
-<<<<<<< .mine
-      if (NFSe.Servico.Valores.totTrib.indTotTrib <> indSim) then
-        Result.AppendChild(AddNode(tcStr, '#1', 'indTotTrib', 1, 1, 1,
-                  indTotTribToStr(NFSe.Servico.Valores.totTrib.indTotTrib), ''))
-      else
-||||||| .r43547
-    begin
-      if NFSe.Servico.Valores.totTrib.pTotTribSN > 0 then
-        Result.AppendChild(AddNode(tcDe2, '#1', 'pTotTribSN', 1, 5, 1,
-                                   NFSe.Servico.Valores.totTrib.pTotTribSN, ''))
-      else
-=======
       Result.AppendChild(GerarXMLValorTotalTributos);
   end;
 begin
@@ -1759,18 +1735,6 @@ begin
 
   case NFSe.OptanteSN of
     osnOptanteMEI:
->>>>>>> .r45929
-<<<<<<< .mine
-        Result.AppendChild(GerarXMLValorTotalTributos);
-||||||| .r43547
-      begin
-        if NFSe.Servico.Valores.totTrib.indTotTrib <> indSim then
-          Result.AppendChild(AddNode(tcStr, '#1', 'indTotTrib', 1, 1, 1,
-                 indTotTribToStr(NFSe.Servico.Valores.totTrib.indTotTrib), ''));
-      end;
-    end;
-  end;
-=======
       begin
         if (NFSe.Servico.Valores.totTrib.indTotTrib <> indSim) then
           Result.AppendChild(AddNode(tcStr, '#1', 'indTotTrib', 1, 1, 1,
@@ -1792,7 +1756,6 @@ begin
       PercentualouValor;
     end;
   end;
->>>>>>> .r45929
   (*
   if (NFSe.Servico.Valores.totTrib.pTotTribFed > 0) or
      (NFSe.Servico.Valores.totTrib.pTotTribEst > 0) or
