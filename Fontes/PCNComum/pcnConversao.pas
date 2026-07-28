@@ -145,6 +145,7 @@ const
   tiSimplificado = {$IFDEF SUPPORTS_SCOPEDENUMS}TACBrTipoImpressao.{$ENDIF}tiSimplificado deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Use o tipo TACBrTipoImpressao da Unit ACBrDFe.Conversao.pas' {$ENDIF};
   tiNFCe = {$IFDEF SUPPORTS_SCOPEDENUMS}TACBrTipoImpressao.{$ENDIF}tiNFCe deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Use o tipo TACBrTipoImpressao da Unit ACBrDFe.Conversao.pas' {$ENDIF};
   tiMsgEletronica = {$IFDEF SUPPORTS_SCOPEDENUMS}TACBrTipoImpressao.{$ENDIF}tiMsgEletronica deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Use o tipo TACBrTipoImpressao da Unit ACBrDFe.Conversao.pas' {$ENDIF};
+  tiSimplificadoTipo2 = {$IFDEF SUPPORTS_SCOPEDENUMS}TACBrTipoImpressao.{$ENDIF}tiSimplificadoTipo2 deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Use o tipo TACBrTipoImpressao da Unit ACBrDFe.Conversao.pas' {$ENDIF};
 
   // Enumerados do TACBrTipoEmissao
 const
@@ -169,6 +170,7 @@ const
   peAvulsaFisco = {$IFDEF SUPPORTS_SCOPEDENUMS}TACBrProcessoEmissao.{$ENDIF}peAvulsaFisco deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Use o tipo TACBrProcessoEmissao da Unit ACBrDFe.Conversao.pas' {$ENDIF};
   peAvulsaContribuinte = {$IFDEF SUPPORTS_SCOPEDENUMS}TACBrProcessoEmissao.{$ENDIF}peAvulsaContribuinte deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Use o tipo TACBrProcessoEmissao da Unit ACBrDFe.Conversao.pas' {$ENDIF};
   peContribuinteAplicativoFisco = {$IFDEF SUPPORTS_SCOPEDENUMS}TACBrProcessoEmissao.{$ENDIF}peContribuinteAplicativoFisco deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Use o tipo TACBrProcessoEmissao da Unit ACBrDFe.Conversao.pas' {$ENDIF};
+  peProvedorAssinaturaAutorizacao = {$IFDEF SUPPORTS_SCOPEDENUMS}TACBrProcessoEmissao.{$ENDIF}peProvedorAssinaturaAutorizacao deprecated {$IfDef SUPPORTS_DEPRECATED_DETAILS} 'Use o tipo TACBrProcessoEmissao da Unit ACBrDFe.Conversao.pas' {$ENDIF};
 
   // Enumerados do TACBrTipoEvento
 const
@@ -824,16 +826,16 @@ end;
 // B21 - Formato de Impressão do DANFE *****************************************
 function TpImpToStr(const t: TpcnTipoImpressao): string;
 begin
-  result := EnumeradoToStr(t, ['0', '1', '2', '3', '4', '5'],
+  result := EnumeradoToStr(t, ['0', '1', '2', '3', '4', '5', '6'],
                               [tiSemGeracao, tiRetrato, tiPaisagem, tiSimplificado,
-                               tiNFCe, tiMsgEletronica]);
+                               tiNFCe, tiMsgEletronica, tiSimplificadoTipo2]);
 end;
 
 function StrToTpImp(out ok: boolean; const s: string): TpcnTipoImpressao;
 begin
-  result := StrToEnumerado(ok, s, ['0', '1', '2', '3', '4', '5'],
+  result := StrToEnumerado(ok, s, ['0', '1', '2', '3', '4', '5', '6'],
                                   [tiSemGeracao, tiRetrato, tiPaisagem, tiSimplificado,
-                                   tiNFCe, tiMsgEletronica]);
+                                   tiNFCe, tiMsgEletronica, tiSimplificadoTipo2]);
 end;
 
 // B22 - Forma de Emissão da NF-e **********************************************
@@ -867,12 +869,16 @@ begin
   // 1 - emissão de NF-e avulsa pelo Fisco;
   // 2 - emissão de NF-e avulsa, pelo contribuinte com seu certificado digital, através do site do Fisco;
   // 3 - emissão NF-e pelo contribuinte com aplicativo fornecido pelo Fisco.
-  result := EnumeradoToStr(t, ['0', '1', '2', '3'], [peAplicativoContribuinte, peAvulsaFisco, peAvulsaContribuinte, peContribuinteAplicativoFisco]);
+  result := EnumeradoToStr(t, ['0', '1', '2', '3', '4'],
+    [peAplicativoContribuinte, peAvulsaFisco, peAvulsaContribuinte,
+     peContribuinteAplicativoFisco, peProvedorAssinaturaAutorizacao]);
 end;
 
 function StrToprocEmi(out ok: boolean; const s: string): TpcnProcessoEmissao;
 begin
-  result := StrToEnumerado(ok, s, ['0', '1', '2', '3'], [peAplicativoContribuinte, peAvulsaFisco, peAvulsaContribuinte, peContribuinteAplicativoFisco]);
+  result := StrToEnumerado(ok, s, ['0', '1', '2', '3', '4'],
+    [peAplicativoContribuinte, peAvulsaFisco, peAvulsaContribuinte,
+     peContribuinteAplicativoFisco, peProvedorAssinaturaAutorizacao]);
 end;
 
 // N11 - Origem da mercadoria **************************************************

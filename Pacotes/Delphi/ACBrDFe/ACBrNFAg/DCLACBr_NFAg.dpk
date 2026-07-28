@@ -1,4 +1,4 @@
-{ Projeto: Componentes ACBr - ACBrNF3e                                         }
+{ Projeto: Componentes ACBr - ACBrNFAg                                         }
 {  Biblioteca multiplataforma de componentes Delphi para interação com equipa- }
 { mentos de Automação Comercial utilizados no Brasil                           }
 {                                                                              }
@@ -32,7 +32,6 @@
 package DCLACBr_NFAg;
 
 {$R *.res}
-{$R *.otares}
 {$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
 {$ALIGN 8}
 {$ASSERTIONS ON}

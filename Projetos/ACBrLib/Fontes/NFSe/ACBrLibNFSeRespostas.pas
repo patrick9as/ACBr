@@ -41,7 +41,7 @@ uses
   SysUtils, Classes, contnrs, ACBrLibResposta, ACBrNFSeXNotasFiscais,
   ACBrNFSeX, ACBrNFSeXWebservicesResponse, ACBrNFSeXWebserviceBase,
   ACBrDFe.Conversao,ACBrNFSeXConversao, ACBrNFSeXConfiguracoes,
-  ACBrBase, ACBrLibConfig;
+  ACBrBase, ACBrLibConfig, ACBrLibComum;
 
 type
 
@@ -100,6 +100,11 @@ type
     FErros: TACBrObjectList;
     FAlertas: TACBrObjectList;
     FResumos: TACBrObjectList;
+
+  protected
+    procedure ListarErros(const Response: TNFSeWebserviceResponse); virtual;
+    procedure ListarAlertas(const Response: TNFSeWebserviceResponse);
+    procedure ListarResumos(const Response: TNFSeWebserviceResponse);
 
   public
     constructor Create(const ASessao: String; const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
@@ -412,6 +417,8 @@ type
     FModoEnvio: TmodoEnvio;
     FNomeArq: string;
 
+  protected
+    procedure ListarErros(const Response: TNFSeWebserviceResponse); override;
   public
     constructor Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao); reintroduce;
     destructor Destroy; override;
@@ -711,6 +718,58 @@ begin
   inherited Create(ASessao, ATipo, AFormato);
 end;
 
+procedure TLibNFSeServiceResposta.ListarErros(const Response: TNFSeWebserviceResponse);
+var
+  Item: TNFSeEventoItem;
+  i: integer;
+begin
+  if Response.Erros.Count > 0 then
+  begin
+    for i := 0 to Response.Erros.Count -1 do
+    begin
+      Item := TNFSeEventoItem.Create(CSessaoRespErro + IntToStr(i + 1), Tipo, Codificacao);
+      Item.Processar(Response.Erros.Items[i]);
+      FErros.Add(Item);
+    end;
+  end;
+end;
+
+procedure TLibNFSeServiceResposta.ListarAlertas(
+  const Response: TNFSeWebserviceResponse);
+var
+  i: integer;
+  Item: TNFSeEventoItem;
+begin
+  if Response.Alertas.Count > 0 then
+  begin
+    for i := 0 to Response.Alertas.Count -1 do
+    begin
+      Item := TNFSeEventoItem.Create(CSessaoRespAlerta + IntToStr(i + 1), Tipo, Codificacao);
+      Item.Processar(Response.Alertas.Items[i]);
+      FAlertas.Add(Item);
+    end;
+  end;
+
+end;
+
+procedure TLibNFSeServiceResposta.ListarResumos(
+  const Response: TNFSeWebserviceResponse);
+var
+  i : integer;
+  Arq: TNFSeArquivoItem;
+
+begin
+  if Response.Resumos.Count > 0 then
+  begin
+    for i := 0 to Response.Resumos.Count - 1 do
+    begin
+      Arq := TNFSeArquivoItem.Create(CSessaoRespArquivo + IntToStr(i + 1), Tipo, Codificacao);
+      Arq.Processar(Response.Resumos.Items[i]);
+      InformacoesArquivo.Add(Arq);
+    end;
+  end;
+end;
+
 { TLibNFSeServiceResposta }
 constructor TLibNFSeServiceResposta.Create(const ASessao: String; const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
@@ -730,43 +789,13 @@ begin
 end;
 
 procedure TLibNFSeServiceResposta.Processar(const Response: TNFSeWebserviceResponse);
-var
-  i: Integer;
-  Item: TNFSeEventoItem;
-  Arq: TNFSeArquivoItem;
 begin
   XmlEnvio := Response.XmlEnvio;
   XmlRetorno := Response.XmlRetorno;
 
-  if Response.Erros.Count > 0 then
-  begin
-    for i := 0 to Response.Erros.Count -1 do
-    begin
-      Item := TNFSeEventoItem.Create(CSessaoRespErro + IntToStr(i + 1), Tipo, Codificacao);
-      Item.Processar(Response.Erros.Items[i]);
-      FErros.Add(Item);
-    end;
-  end;
-
-  if Response.Alertas.Count > 0 then
-  begin
-    for i := 0 to Response.Alertas.Count -1 do
-    begin
-      Item := TNFSeEventoItem.Create(CSessaoRespAlerta + IntToStr(i + 1), Tipo, Codificacao);
-      Item.Processar(Response.Alertas.Items[i]);
-      FAlertas.Add(Item);
-    end;
-  end;
-
-  if Response.Resumos.Count > 0 then
-  begin
-    for i := 0 to Response.Resumos.Count - 1 do
-    begin
-      Arq := TNFSeArquivoItem.Create(CSessaoRespArquivo + IntToStr(i + 1), Tipo, Codificacao);
-      Arq.Processar(Response.Resumos.Items[i]);
-      InformacoesArquivo.Add(Arq);
-    end;
-  end;
+  ListarErros(Response);
+  ListarAlertas(Response);
+  ListarResumos(Response);
 end;
 
 { TEmiteResposta }
@@ -1025,6 +1054,15 @@ begin
   FLinkNFSe:= LinkNFSe;
 end;
 
+
+procedure TGerarLoteResposta.ListarErros(const Response: TNFSeWebserviceResponse
+  );
+begin
+  inherited ListarErros(Response);
+  if ( Erros.Count > 0 ) then
+    raise EACBrException.Create(self.Gerar);
+end;
+
 { TGerarLoteResposta }
 constructor TGerarLoteResposta.Create(const ATipo: TACBrLibRespostaTipo; const AFormato: TACBrLibCodificacao);
 begin
@@ -1038,10 +1076,12 @@ end;
 
 procedure TGerarLoteResposta.Processar(const Response: TNFSeEmiteResponse);
 begin
+  Inherited Processar(Response);
   FLote:= Response.NumeroLote;
   FQtdMaxRps:= Response.MaxRps;
   FModoEnvio:= Response.ModoEnvio;
   FNomeArq:= Response.NomeArq;
+
 end;
 
 { TEnviarEventoResposta }

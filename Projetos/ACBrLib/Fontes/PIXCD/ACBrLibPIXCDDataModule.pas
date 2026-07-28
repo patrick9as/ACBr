@@ -287,6 +287,7 @@ begin
       ArqLOG   := pLibPIXCDConfig.PIXCDConfig.ArqLog;
       NivelLog := pLibPIXCDConfig.PIXCDConfig.NivelLog;
       TimeOut  := pLibPIXCDConfig.PIXCDConfig.TimeOut;
+      ValidarCopiaECola := pLibPIXCDConfig.PIXCDConfig.ValidarCopiaECola;
     end;
 
     with ACBrPixCD1.PSP do
@@ -505,6 +506,7 @@ begin
       ClientID           := pLibPIXCDConfig.PIXCDAppLess.ClientID;
       ClientSecret       := pLibPIXCDConfig.PIXCDAppLess.ClientSecret;
       SecretKeyHMAC      := pLibPIXCDConfig.PIXCDAppLess.SecretKeyHMAC;
+      Scopes             := pLibPIXCDConfig.PIXCDAppLess.Scopes;
     end;
 
     with ACBrPSPQQPag1 do
@@ -512,6 +514,7 @@ begin
       ChavePIX     := pLibPIXCDConfig.PIXCDQQPag.ChavePIX;
       ClientID     := pLibPIXCDConfig.PIXCDQQPag.ClientID;
       ClientSecret := pLibPIXCDConfig.PIXCDQQPag.ClientSecret;
+      Scopes       := pLibPIXCDConfig.PIXCDQQPag.Scopes;
     end;
 
     {$IFDEF Demo}
