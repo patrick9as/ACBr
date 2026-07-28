@@ -1056,7 +1056,7 @@ begin
   Titulo := 'WebServices Eventos: Alteração de Poltrona';
   if not(InputQuery(Titulo, 'Chave da BP-e', Chave)) then
      exit;
-  Chave := Trim(OnlyNumber(Chave));
+  Chave := Trim(RemoverLiteralChave(Chave));
   idLote := '1';
   if not(InputQuery(Titulo, 'Identificador de controle do Lote de envio do Evento', idLote)) then
      exit;
@@ -1114,7 +1114,7 @@ begin
 
   if not(InputQuery(Titulo, 'Chave da BP-e', Chave)) then
      exit;
-  Chave := Trim(OnlyNumber(Chave));
+  Chave := Trim(RemoverLiteralChave(Chave));
   idLote := '1';
   if not(InputQuery(Titulo, 'Identificador de controle do Lote de envio do Evento', idLote)) then
      exit;
@@ -1164,7 +1164,7 @@ begin
 
   if not(InputQuery(Titulo, 'Chave da BP-e', Chave)) then
      exit;
-  Chave := Trim(OnlyNumber(Chave));
+  Chave := Trim(RemoverLiteralChave(Chave));
   idLote := '1';
   if not(InputQuery(Titulo, 'Identificador de controle do Lote de envio do Evento', idLote)) then
      exit;
@@ -1490,7 +1490,7 @@ begin
 
   if not(InputQuery(Titulo, 'Chave da BP-e', Chave)) then
      exit;
-  Chave := Trim(OnlyNumber(Chave));
+  Chave := Trim(RemoverLiteralChave(Chave));
   idLote := '1';
   if not(InputQuery(Titulo, 'Identificador de controle do Lote de envio do Evento', idLote)) then
      exit;
@@ -1790,7 +1790,7 @@ begin
 
   if not(InputQuery(Titulo, 'Chave da BP-e', Chave)) then
      exit;
-  Chave := Trim(OnlyNumber(Chave));
+  Chave := Trim(RemoverLiteralChave(Chave));
   idLote := '1';
   if not(InputQuery(Titulo, 'Identificador de controle do Lote de envio do Evento', idLote)) then
      exit;
@@ -1988,7 +1988,7 @@ begin
   Chave := '';
   if not(InputQuery(Titulo, 'Chave da BP-e', Chave)) then
      exit;
-  Chave := Trim(OnlyNumber(Chave));
+  Chave := Trim(RemoverLiteralChave(Chave));
 
   idLote := '1';
   if not(InputQuery(Titulo, 'Identificador de controle do Lote de envio do Evento', idLote)) then
@@ -2429,7 +2429,6 @@ end;
 
 procedure TfrmACBrBPe.ConfigurarComponente;
 var
-  Ok: Boolean;
   PathMensal: string;
 begin
   ACBrBPe1.Configuracoes.Certificados.ArquivoPFX  := edtCaminho.Text;

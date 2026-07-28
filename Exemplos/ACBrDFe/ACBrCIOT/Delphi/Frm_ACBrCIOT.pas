@@ -212,6 +212,9 @@ type
     rgOperacao: TRadioGroup;
     Button1: TButton;
     Button2: TButton;
+    tsOutros: TTabSheet;
+    btnLerArqINI: TButton;
+    btnGerarArqINI: TButton;
 
     procedure FormCreate(Sender: TObject);
     procedure btnSalvarConfigClick(Sender: TObject);
@@ -247,6 +250,9 @@ type
     procedure btnCriarEnviarClick(Sender: TObject);
     procedure btnEnviarCiotEmailClick(Sender: TObject);
     procedure Button2Click(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
+    procedure btnLerArqINIClick(Sender: TObject);
+    procedure btnGerarArqINIClick(Sender: TObject);
   private
     { Private declarations }
     sToken: string;
@@ -371,8 +377,8 @@ begin
              Telefones.Celular.DDD := 11;
              Telefones.Celular.Numero := StrToIntDef(edtEmitFone.Text, 0);
 
-             Telefones.Fixo.DDD := 0;
-             Telefones.Fixo.Numero := 0;
+             Telefones.Fixo.DDD := 11;
+             Telefones.Fixo.Numero := StrToIntDef(edtEmitFone.Text, 0);
 
              Telefones.Fax.DDD := 0;
              Telefones.Fax.Numero := 0;
@@ -410,9 +416,9 @@ begin
 
            with GravarMotorista do
            begin
-             CPF                 := '12345678901';
+             CPF                 := '14944626649';
              Nome                := 'jose da silva';
-             CNH                 := '123456789';
+             CNH                 := '122333444';
              DataNascimento      := StrToDate('10/10/1970');
              NomeDeSolteiraDaMae := 'joana pereira';
 
@@ -423,11 +429,11 @@ begin
              Endereco.CEP := '89870000';
              Endereco.CodigoMunicipio := 4212908;
 
-             Telefones.Celular.DDD := 0;
-             Telefones.Celular.Numero := 0;
+             Telefones.Celular.DDD := 11;
+             Telefones.Celular.Numero := 987654321;
 
-             Telefones.Fixo.DDD := 49;
-             Telefones.Fixo.Numero := 33661011;
+             Telefones.Fixo.DDD := 11;
+             Telefones.Fixo.Numero := 987654321;
 
              Telefones.Fax.DDD := 0;
              Telefones.Fax.Numero := 0;
@@ -442,16 +448,17 @@ begin
            begin
              (****************  DADOS DO CONTRATO  **************)
              TipoViagem := Padrao; // TAC_Agregado;
-             TipoPagamento := eFRETE;
+             TipoPagamento := TransferenciaBancaria;
              EmissaoGratuita := (TipoPagamento = TransferenciaBancaria);
              BloquearNaoEquiparado := False;
+             // Em homologação, preencher o CNPJ cadastrado no ambiente dev em Matriz e Filial
              MatrizCNPJ := edtEmitCNPJ.text;
              FilialCNPJ := edtEmitCNPJ.text;
              //Id / Chave primária da Tabela do banco de dados do CIOT
              IdOperacaoCliente := '1';
              DataInicioViagem := Now;
              DataFimViagem := Now;
-             CodigoNCMNaturezaCarga := 0;
+             CodigoNCMNaturezaCarga := 5501;
              PesoCarga := 10;
              //utilizado somente para as viagens do tipo Padrão
              TipoEmbalagem := tePallet;
@@ -465,17 +472,21 @@ begin
                CepOrigem := '';
                CepDestino := '';
                DistanciaPercorrida := 100;
+               LatitudeOrigem := 0;
+               LongitudeOrigem := 0;
+               LatitudeDestino := 0;
+               LongitudeDestino := 0;
 
-               Valores.TotalOperacao := 50;
-               Valores.TotalViagem := 50;
-               Valores.TotalDeAdiantamento := 10;
-               Valores.TotalDeQuitacao := 10;
-               Valores.Combustivel := 20;
-               Valores.Pedagio := 10;
-               Valores.OutrosCreditos := 1;
+               Valores.TotalOperacao := 9000;
+               Valores.TotalViagem := 10000;
+               Valores.TotalDeAdiantamento := 0;
+               Valores.TotalDeQuitacao := 0;
+               Valores.Combustivel := 500;
+               Valores.Pedagio := 400;
+               Valores.OutrosCreditos := 0;
                Valores.JustificativaOutrosCreditos := 'Teste';
-               Valores.Seguro := 10;
-               Valores.OutrosDebitos := 1;
+               Valores.Seguro := 100;
+               Valores.OutrosDebitos := 0;
                Valores.JustificativaOutrosDebitos := 'Teste outros Debitos';
 
                TipoPagamento := TransferenciaBancaria;
@@ -527,17 +538,25 @@ begin
              begin
                IdPagamentoCliente := '1';
                DataDeLiberacao := Date;
-               Valor := 10;
+               Valor := 10000;
                TipoPagamento := TransferenciaBancaria; //TransferenciaBancaria(EmissaoGratuita = true); eFRETE (EmissaoGratuita = false)
                Categoria := tcpSemCategoria;//Para os TipoViagem Frota e TAC_Agregado são suportadas as Categorias Frota e SemCategoria. Para o TipoViagem Padrão todas as categorias são suportadas.
                Documento := ''; //Documento relacionado a viagem.
+               IndicadorPagamento := 'AVista';
+               CpfCnpjCreditado := '';
+               NumeroParcela := 0;
+               CodigoPagamento := '';
 
                InformacoesBancarias.InstituicaoBancaria := '756'; //Bancoob
-               InformacoesBancarias.Agencia := '';
-               InformacoesBancarias.Conta := '';
+               InformacoesBancarias.Agencia := '1357';
+               InformacoesBancarias.Conta := '13579';
                InformacoesBancarias.TipoConta := tcContaCorrente;
 
                InformacaoAdicional := '';
+               TipoChavePix := '';
+               ValorChavePix := '';
+               IdentificadorPix := '';
+
                //CNPJ que deve ser gerada a Nota Fiscal do abastecimento,
                //sendo da mesma raíz do CNPJ da matriz do contratante,
                //apenas aplicável para Categoria Frota (Abastecimento)
@@ -549,14 +568,14 @@ begin
              //Para o TipoViagem Frota o Contratado será a própria empresa que está declarando a operação.
              with Contratado do
              begin
-               CpfOuCnpj := '12345678910';
+               CpfOuCnpj := '12345678000195';
                RNTRC := '12345678';
              end;
 
              with Motorista do
              begin
-               CpfOuCnpj := '12345678910';
-               CNH := '12345678910';
+               CpfOuCnpj := '12345678000195';
+               CNH := '12345678000195';
 
                Celular.DDD := 49;
                Celular.Numero := 123456789;
@@ -568,18 +587,18 @@ begin
              //Não esperado para TipoViagem Frota.
              with Destinatario do
              begin
-               NomeOuRazaoSocial := '';
-               CpfOuCnpj := '';
+               NomeOuRazaoSocial := 'NOME DESTINATARIO';
+               CpfOuCnpj := '12345678000195';
 
                EMail := '';
                ResponsavelPeloPagamento := False;
 
-               Endereco.Bairro := 'teste';
-               Endereco.Rua := '';
-               Endereco.Numero := '';
-               Endereco.Complemento := '';
-               Endereco.CEP := '';
-               Endereco.CodigoMunicipio := 0;
+               Endereco.Bairro := edtEmitBairro.Text;
+               Endereco.Rua := edtEmitLogradouro.Text;
+               Endereco.Numero := edtEmitNumero.Text;
+               Endereco.Complemento := edtEmitComp.Text;
+               Endereco.CEP := edtEmitCEP.Text;
+               Endereco.CodigoMunicipio := StrToIntDef(edtEmitCodCidade.Text,0);
 
                Telefones.Celular.DDD := 0;
                Telefones.Celular.Numero := 0;
@@ -594,15 +613,15 @@ begin
              with Contratante do
              begin
                NomeOuRazaoSocial := 'teste';
-               CpfOuCnpj := '12345678910';
+               CpfOuCnpj := '12345678000195';
 
                EMail := 'teste@teste.com.br';
-               ResponsavelPeloPagamento := False;
+               ResponsavelPeloPagamento := True;
                RNTRC := '12345678';
 
                Endereco.Bairro := 'Bela Vista';
                Endereco.Rua := 'Rua Vitória';
-               Endereco.Numero := '';
+               Endereco.Numero := '123';
                Endereco.Complemento := '';
                Endereco.CEP := '89870000';
                Endereco.CodigoMunicipio := 4212908;
@@ -735,9 +754,17 @@ begin
              // tpConteinerizada, tpCargaGeral, tpNeogranel, tpPerigosaGranelSolido,
              // tpPerigosaGranelLiquido, tpPerigosaCargaFrigorificada,
              // tpPerigosaConteinerizada, tpPerigosaCargaGeral
-             CodigoTipoCarga := tpNaoAplicavel;
+             CodigoTipoCarga := tpCargaGeral;
              AltoDesempenho := True;
              DestinacaoComercial := True;
+
+             with ContratantesCargaFracionada.New do
+             begin
+               CpfOuCnpj := '12345678000195';
+             end;
+
+             ComposicaoVeicular := False;
+             RetornoVazio := False;
              FreteRetorno := False;
              CepRetorno := '';
              DistanciaRetorno := 100;
@@ -762,6 +789,10 @@ begin
                CodigoMunicipioDestino := 4217303; //Saudades SC
                CepOrigem := '';
                CepDestino := '';
+               LatitudeOrigem := 0;
+               LongitudeOrigem := 0;
+               LatitudeDestino := 0;
+               LongitudeDestino := 0;
                DistanciaPercorrida := 100;
 
                Valores.TotalOperacao := 50;
@@ -818,13 +849,19 @@ begin
                TipoPagamento := TransferenciaBancaria; //TransferenciaBancaria(EmissaoGratuita = true); eFRETE (EmissaoGratuita = false)
                Categoria := tcpSemCategoria;//Para os TipoViagem Frota e TAC_Agregado são suportadas as Categorias Frota e SemCategoria. Para o TipoViagem Padrão todas as categorias são suportadas.
                Documento := ''; //Documento relacionado a viagem.
+               IndicadorPagamento := '';
+               CpfCnpjCreditado := '';
+               NumeroParcela := 0;
 
                InformacoesBancarias.InstituicaoBancaria := '756'; //Bancoob
-               InformacoesBancarias.Agencia := '';
-               InformacoesBancarias.Conta := '';
+               InformacoesBancarias.Agencia := '1357';
+               InformacoesBancarias.Conta := '13579';
                InformacoesBancarias.TipoConta := tcContaCorrente;
 
                InformacaoAdicional := '';
+               TipoChavePix := '';
+               ValorChavePix := '';
+               IdentificadorPix := '';
                //CNPJ que deve ser gerada a Nota Fiscal do abastecimento,
                //sendo da mesma raíz do CNPJ da matriz do contratante,
                //apenas aplicável para Categoria Frota (Abastecimento)
@@ -851,13 +888,19 @@ begin
                TipoPagamento := TransferenciaBancaria; //TransferenciaBancaria(EmissaoGratuita = true); eFRETE (EmissaoGratuita = false)
                Categoria := tcpSemCategoria;//Para os TipoViagem Frota e TAC_Agregado são suportadas as Categorias Frota e SemCategoria. Para o TipoViagem Padrão todas as categorias são suportadas.
                Documento := ''; //Documento relacionado a viagem.
+               IndicadorPagamento := '';
+               CpfCnpjCreditado := '';
+               NumeroParcela := 0;
 
                InformacoesBancarias.InstituicaoBancaria := '756'; //Bancoob
-               InformacoesBancarias.Agencia := '';
-               InformacoesBancarias.Conta := '';
+               InformacoesBancarias.Agencia := '1357';
+               InformacoesBancarias.Conta := '13579';
                InformacoesBancarias.TipoConta := tcContaCorrente;
 
                InformacaoAdicional := '';
+               TipoChavePix := '';
+               ValorChavePix := '';
+               IdentificadorPix := '';
                //CNPJ que deve ser gerada a Nota Fiscal do abastecimento,
                //sendo da mesma raíz do CNPJ da matriz do contratante,
                //apenas aplicável para Categoria Frota (Abastecimento)
@@ -1004,8 +1047,8 @@ begin
                Documento := ''; //Documento relacionado a viagem.
 
                InformacoesBancarias.InstituicaoBancaria := '756'; //Bancoob
-               InformacoesBancarias.Agencia := '';
-               InformacoesBancarias.Conta := '';
+               InformacoesBancarias.Agencia := '1357';
+               InformacoesBancarias.Conta := '13579';
                InformacoesBancarias.TipoConta := tcContaCorrente;
 
                InformacaoAdicional := '';
@@ -1212,6 +1255,13 @@ begin
 
   ACBrCIOT1.Contratos.Clear;
   ACBrCIOT1.Contratos.LoadFromFile(OpenDialog1.FileName);
+
+  if ACBrCIOT1.Contratos.Count = 0 then
+  begin
+    ShowMessage('Não foram carregados registros');
+    exit;
+  end;
+
   CC := TStringList.Create;
   try
     //CC.Add('email_1@provedor.com'); //especifique um email válido
@@ -1229,19 +1279,67 @@ begin
   end;
 end;
 
-procedure TfrmACBrCIOT.btnGerarCIOTClick(Sender: TObject);
+procedure TfrmACBrCIOT.Button1Click(Sender: TObject);
 var
   vAux : String;
+  LUF : String;
   Codigo: Integer;
-
 begin
   vAux := '';
   if not (InputQuery('Consultar por Descrição', 'Nome da Cidade', vAux)) then
     exit;
 
-  Codigo := ObterCodigoMunicipio(vAux, 'SP', 'C:\Erp\Txt\Blt' );
+  LUF := '';
+  if not (InputQuery('Consultar por Descrição', 'UF do Estado', LUF)) then
+    exit;
+
+  Codigo := ObterCodigoMunicipio(vAux, LUF, edtPathLogs.Text);
 
   ShowMessage('Codigo: ' + IntToStr(Codigo));
+end;
+
+procedure TfrmACBrCIOT.btnGerarArqINIClick(Sender: TObject);
+var
+  SaveDlg: TSaveDialog;
+  ArqINI: TStringList;
+begin
+  ACBrCIOT1.Contratos.Clear;
+  AlimentarComponente;
+  ACBrCIOT1.Contratos.GerarCIOT;
+
+  ArqINI := TStringList.Create;
+  SaveDlg := TSaveDialog.Create(nil);
+  try
+    ArqINI.Text := ACBrCIOT1.Contratos.GerarIni;
+
+    SaveDlg.Title := 'Escolha o local onde salvar o INI';
+    SaveDlg.DefaultExt := '*.ini';
+    SaveDlg.Filter := 'Arquivo INI(*.INI)|*.INI|Arquivo ini(*.ini)|*.ini|Todos os arquivos(*.*)|*.*';
+
+    if SaveDlg.Execute then
+      ArqINI.SaveToFile(SaveDlg.FileName);
+
+    memoLog.Lines.Add('Arquivo Salvo: ' + SaveDlg.FileName);
+  finally
+    SaveDlg.Free;
+    ArqINI.Free;
+  end;
+end;
+
+procedure TfrmACBrCIOT.btnGerarCIOTClick(Sender: TObject);
+var
+  i: Integer;
+begin
+  ACBrCIOT1.Contratos.Clear;
+  AlimentarComponente;
+  ACBrCIOT1.Contratos.GerarCIOT;
+  ACBrCIOT1.Contratos.GravarXML;
+
+  MemoResp.Clear;
+  for i := 0 to ACBrCIOT1.Contratos.Count-1 do
+    MemoResp.Lines.Add(ACBrCIOT1.Contratos[i].NomeArq);
+
+  pgRespostas.ActivePage := TabSheet5;
 end;
 
 procedure TfrmACBrCIOT.btnIssuerNameClick(Sender: TObject);
@@ -1272,6 +1370,37 @@ begin
     //  ShowMessage('ERRO: '+Erro)
 
     pgRespostas.ActivePageIndex := 0;
+  end;
+end;
+
+procedure TfrmACBrCIOT.btnLerArqINIClick(Sender: TObject);
+begin
+  OpenDialog1.Title := 'Selecione o Arquivo INI';
+  OpenDialog1.DefaultExt := '*.ini';
+  OpenDialog1.Filter :=
+    'Arquivos INI (*.ini)|*.ini|Todos os Arquivos (*.*)|*.*';
+  OpenDialog1.InitialDir := ACBrCIOT1.Configuracoes.Arquivos.PathSalvar;
+
+  if OpenDialog1.Execute then
+  begin
+    ACBrCIOT1.Contratos.Clear;
+    ACBrCIOT1.Contratos.LoadFromIni(OpenDialog1.FileName);
+    ACBrCIOT1.Contratos.Assinar;
+    ACBrCIOT1.Contratos.GravarXML();
+
+    memoLog.Lines.Add('Arquivo gerado em: ' + ACBrCIOT1.Contratos[0].NomeArq);
+
+    try
+      if ACBrCIOT1.Contratos[0].Alertas <> '' then
+        memoLog.Lines.Add('Alertas: '+ ACBrCIOT1.Contratos[0].Alertas);
+
+      ShowMessage('CIOT Valido');
+    except
+      on E: Exception do
+      begin
+        memoLog.Lines.Add('Exception: ' + E.Message);
+      end;
+    end;
   end;
 end;
 
@@ -1309,7 +1438,7 @@ begin
   if not (InputQuery('Consultar por Codigo', 'Codigo da Cidade', vAux)) then
     exit;
 
-  Nome := ObterNomeMunicipio(UFparaCodigoUF('SP'), vAux, 'C:\Erp\Txt\Blt' );
+  Nome := ObterNomeMunicipio(StrToIntDef(vAux,0), vAux, edtPathLogs.Text);
 
   ShowMessage('Nome: ' + Nome);
 end;
