@@ -124,7 +124,7 @@ type
 
   TnfseProvedor = (proNenhum,
                    proPadraoNacional,
-                   proAbaco, proABase, proActcon, proAdm, proADPM, proAEG,
+                   proAbaco, proABase, proActcon, proAdm, proADPM, proAEG, proAgape,
                    proAgili, proAspec, proAssessorPublico, proAsten, proBauhaus,
                    proBetha, proBHISS, proBWSistemas, proCenti, proCIGA, proCitta,
                    proConam, proContass, proCoplan, proCTA, proCTAConsult, proDataSmart,
@@ -133,7 +133,7 @@ type
                    proeReceita, proEtherium, proFacundo, proFGMaiss, profintelISS,
                    proFiorilli, proFisco, proFISSLex, proFuturize, proGeisWeb,
                    progeNFe, proGestaoISS, proGiap, proGinfes, proGiss, proGovBR,
-                   proGovDigital, proGoverna, proHorus, proiiBrasil, proInfisc,
+                   proGovDigital, proGoverna, proHM2, proHorus, proiiBrasil, proInfisc,
                    proIntertec, proIPM, proIsaneto, proISSBarueri, proISSCamacari,
                    proISSCambe, proISSCampinas, proISSCuritiba, proISSDigital,
                    proISSDSF, proISSe, proISSFortaleza, proISSGoiania, proISSIntel,
@@ -150,9 +150,10 @@ type
                    proSigISS, proSigISSWeb, proSilTecnologia, proSimple,
                    proSimplISS, proSintese, proSisPMJP, proSistemas4R,
                    proSmarAPD, proSmart4, proSoftPlan, proSpeedGov, proSSInformatica,
-                   proSudoeste, proSysISS, proSystemPro, proTcheInfo, proTecnos,
-                   proThema, proTinus, proTiplan, proTributus, proVersaTecnologia,
-                   proVirtual, proWebFisco, proWebISS, proXTRTecnologia);
+                   proSudoeste, proSysISS, proSystemPro, proTaxTecnologia,
+                   proTcheInfo, proTecnos, proThema, proTinus, proTiplan,
+                   proTributus, proVersaTecnologia, proVirtual, proWebFisco,
+                   proWebISS, proXTRTecnologia);
 
   TnfseSituacaoTributaria = (stRetencao, stNormal, stSubstituicao, stNenhum,
                              stRetidoForaMunicipio, stDevidoForaMunicipioNaoRetido);
@@ -539,22 +540,29 @@ const
 
 type
   TCSTPis = (cstPisVazio, cstPis00, cstPis01, cstPis02, cstPis03, cstPis04,
-             cstPis05, cstPis06, cstPis07, cstPis08, cstPis09);
+             cstPis05, cstPis06, cstPis07, cstPis08, cstPis09, cstPis49,
+             cstPis50, cstPis51, cstPis52, cstPis53, cstPis54, cstPis55, cstPis56,
+             cstPis60, cstPis61, cstPis62, cstPis63, cstPis64, cstPis65, cstPis66,
+             cstPis67, cstPis70, cstPis71, cstPis72, cstPis73, cstPis74, cstPis75,
+             cstPis98, cstPis99);
 
 const
   TCSTPisArrayStrings: array[TCSTPis] of string = ('', '00', '01', '02', '03',
-    '04', '05', '06', '07', '08', '09');
+    '04', '05', '06', '07', '08', '09', '49', '50', '51', '52', '53', '54', '55',
+    '56', '60', '61', '62', '63', '64', '65', '66', '67', '70', '71', '72', '73',
+    '74', '75', '98', '99');
 
 type
   TtpRetPisCofins = (trpiscofinscsllNaoRetido, trpcRetido,
                      trpcNaoRetido, trpiscofinscsllRetido,
                      trpiscofinsRetidocsllNaoRetido, trPisRetidoCofinsCsllNaoRetido,
                      trCofinsRetidoPisCsllNaoRetido, trCofinsCsllRetidoPisNaoRetido,
-                     trCsllRetidoPisCofinsNaoRetido, trPisCsllRetidoCofinsNaoRetido);
+                     trCsllRetidoPisCofinsNaoRetido, trPisCsllRetidoCofinsNaoRetido,
+                     trVazio);
 
 const
   TtpRetPisCofinsArrayStrings: array[TtpRetPisCofins] of string = ('0', '1', '2',
-    '3', '4', '5', '6', '7', '8', '9');
+    '3', '4', '5', '6', '7', '8', '9', '');
 
 type
   TindTotTrib = (indNao, indSim);
@@ -665,6 +673,15 @@ const
     ('ConsultarNFSeRPS', 'ConsultarNFSePorChave', 'EnviarEvento',
      'ConsultarEvento', 'ConsultarDFe', 'ConsultarParam', 'ObterDANFSE');
 
+type
+  TIdLocalIncidencia = (liMunicipio, liMunicipioAdquirente, liLocalEntrega,
+    liLocalPrestacao, liLocalEvento, liLocalImovel, liLocalIncidenciaIBS,
+    liViaExplorada);
+
+const
+  TIdLocalIncidenciaArrayStrings: array[TIdLocalIncidencia] of string =
+    ('0', '1', '2', '3', '4', '5', '6', '7');
+
 // Reforma Tributária
 
 type
@@ -672,6 +689,8 @@ type
 
 const
   TfinNFSeArrayStrings: array[TfinNFSe] of string = ('0', '1', '2');
+  TfinNFSeDescricaoArrayStrings: array[TfinNFSe] of string = ('Regular',
+    'Crédito', 'Débito');
 
 type
   TindFinal = (ifSim, ifNao);
@@ -873,6 +892,7 @@ function StrToindTotTrib(out ok: Boolean; const s: string): TindTotTrib;
 
 function ambGerToStr(const t: TambGer): string;
 function StrToambGer(out ok: Boolean; const s: string): TambGer;
+function ambGerToStrText(const t: TambGer): string;
 
 function tpEmisToStr(const t: TtpEmis): string;
 function StrTotpEmis(out ok: Boolean; const s: string): TtpEmis;
@@ -917,9 +937,15 @@ function StrToServicoAPIPadraoNacional(const s: string): TServicoAPIPadraoNacion
 
 function MoedaBACENToMoedaISO(const ACodigoMoedaBACEN: Integer): Integer;
 
+function IdLocalIncidenciaToStr(t: TIdLocalIncidencia): string;
+function StrToIdLocalIncidencia(const s: string): TIdLocalIncidencia;
+
 // Reforma Tributária
+function cStatToStr(const t: Integer): string;
+
 function finNFSeToStr(const t: TfinNFSe): string;
 function StrTofinNFSe(const s: string): TfinNFSe;
+function finNFSeToStrText(const t: TfinNFSe): string;
 
 function indFinalToStr(const t: TindFinal): string;
 function StrToindFinal(const s: string): TindFinal;
@@ -940,10 +966,18 @@ function tpOperGovNFSeToStr(const t: TtpOperGovNFSe): string;
 function TryStrTotpOperGovNFSe(const s: string; out Value: TtpOperGovNFSe): Boolean;
 function StrTotpOperGovNFSe(const s: string): TtpOperGovNFSe;
 
-(*
-function modoPrestServToStr(const t: TmodoPrestServ): string;
-function StrTomodoPrestServ(const s: string): TmodoPrestServ;
-*)
+function StrTipoRPSToEnum(const s: string): TTipoRPS;
+function EnumToStrTipoRPS(const t: TTipoRPS): string;
+function ListaStrTipoRPS: string;
+
+function StrSimNaoToEnum(const s: string): TnfseSimNao;
+function EnumToStrSimNao(const t: TnfseSimNao): string;
+function ListaStrSimNao: string;
+
+function StrTipoPessoaToEnum(const s: string): TTipoPessoa;
+function EnumToStrTipoPessoa(const t: TTipoPessoa): string;
+function ListaStrTipoPessoa: string;
+
 type
   TPais = record
     CodPaisIBGE: Integer;
@@ -1445,19 +1479,19 @@ const
     7820, 7838, 7889, 7919, 7951, 8001, 8052, 8109, 8150, 8206, 8230, 8249,
     8273, 8281, 8311, 8338, 8451, 8478, 8486, 8508, 8583, 8630, 8664, 8753,
     8702, 8885, 8907);
-
+{
 function StrToEnumerado(out ok: boolean; const s: string; const AString: array of string;
   const AEnumerados: array of variant): variant;
 function EnumeradoToStr(const t: variant; const AString:
   array of string; const AEnumerados: array of variant): variant;
-
+}
 implementation
 
 uses
   ACBrUtil.Strings, ACBrUtil.XMLHTML, ACBrUtil.FilesIO,
   ACBrXmlBase,
   ACBrDFe.Conversao;
-
+{
 function StrToEnumerado(out ok: boolean; const s: string; const AString:
   array of string; const AEnumerados: array of variant): variant;
 var
@@ -1482,7 +1516,7 @@ begin
     if t = AEnumerados[i] then
       result := AString[i];
 end;
-
+}
 function CodIBGEToCodTOM(const ACodigo: Integer): string;
 var
  CodTOM: string;
@@ -13644,39 +13678,55 @@ end;
 function CSTPisToStr(const t: TCSTPis): string;
 begin
   result := EnumeradoToStr(t,
-        ['', '00', '01', '02', '03', '04', '05', '06', '07', '08', '09'],
+        ['', '00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '49',
+         '50', '51', '52', '53', '54', '55', '56', '60', '61', '62',
+         '63', '64', '65', '66', '67', '70', '71', '72', '73', '74', '75',
+         '98', '99'],
         [cstPisVazio, cstPis00, cstPis01, cstPis02, cstPis03, cstPis04,
-         cstPis05, cstPis06, cstPis07, cstPis08, cstPis09]);
+         cstPis05, cstPis06, cstPis07, cstPis08, cstPis09, cstPis49,
+         cstPis50, cstPis51, cstPis52, cstPis53, cstPis54, cstPis55, cstPis56,
+         cstPis60, cstPis61, cstPis62, cstPis63, cstPis64, cstPis65, cstPis66,
+         cstPis67, cstPis70, cstPis71, cstPis72, cstPis73, cstPis74, cstPis75,
+         cstPis98, cstPis99]);
 end;
 
 function StrToCSTPis(out ok: Boolean; const s: string): TCSTPis;
 begin
   result := StrToEnumerado(ok, s,
-        ['', '00', '01', '02', '03', '04', '05', '06', '07', '08', '09'],
+        ['', '00', '01', '02', '03', '04', '05', '06', '07', '08', '09', '49',
+         '50', '51', '52', '53', '54', '55', '56', '60', '61', '62',
+         '63', '64', '65', '66', '67', '70', '71', '72', '73', '74', '75',
+         '98', '99'],
         [cstPisVazio, cstPis00, cstPis01, cstPis02, cstPis03, cstPis04,
-         cstPis05, cstPis06, cstPis07, cstPis08, cstPis09]);
+         cstPis05, cstPis06, cstPis07, cstPis08, cstPis09, cstPis49,
+         cstPis50, cstPis51, cstPis52, cstPis53, cstPis54, cstPis55, cstPis56,
+         cstPis60, cstPis61, cstPis62, cstPis63, cstPis64, cstPis65, cstPis66,
+         cstPis67, cstPis70, cstPis71, cstPis72, cstPis73, cstPis74, cstPis75,
+         cstPis98, cstPis99]);
 end;
 
 function tpRetPisCofinsToStr(const t: TtpRetPisCofins): string;
 begin
   result := EnumeradoToStr(t,
-                           ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+                           ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ''],
               [trpiscofinscsllNaoRetido, trpcRetido,
                trpcNaoRetido, trpiscofinscsllRetido,
                trpiscofinsRetidocsllNaoRetido, trPisRetidoCofinsCsllNaoRetido,
                trCofinsRetidoPisCsllNaoRetido, trCofinsCsllRetidoPisNaoRetido,
-               trCsllRetidoPisCofinsNaoRetido, trPisCsllRetidoCofinsNaoRetido]);
+               trCsllRetidoPisCofinsNaoRetido, trPisCsllRetidoCofinsNaoRetido,
+               trVazio]);
 end;
 
 function StrTotpRetPisCofins(out ok: Boolean; const s: string): TtpRetPisCofins;
 begin
   result := StrToEnumerado(ok, s,
-                           ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+                           ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ''],
               [trpiscofinscsllNaoRetido, trpcRetido,
                trpcNaoRetido, trpiscofinscsllRetido,
                trpiscofinsRetidocsllNaoRetido, trPisRetidoCofinsCsllNaoRetido,
                trCofinsRetidoPisCsllNaoRetido, trCofinsCsllRetidoPisNaoRetido,
-               trCsllRetidoPisCofinsNaoRetido, trPisCsllRetidoCofinsNaoRetido]);
+               trCsllRetidoPisCofinsNaoRetido, trPisCsllRetidoCofinsNaoRetido,
+               trVazio]);
 end;
 
 function tpRetPisCofinsDescricao(const t: TtpRetPisCofins): string;
@@ -13722,6 +13772,13 @@ function StrToambGer(out ok: Boolean; const s: string): TambGer;
 begin
   result := StrToEnumerado(ok, s,
                            ['1', '2'],
+                           [agPrefeitura, agSistemaNacional]);
+end;
+
+function ambGerToStrText(const t: TambGer): string;
+begin
+  result := EnumeradoToStr(t,
+                           ['Prefeitura', 'Sistema Nacional'],
                            [agPrefeitura, agSistemaNacional]);
 end;
 
@@ -14066,7 +14123,40 @@ begin
   Result := MoedaISO;
 end;
 
+function IdLocalIncidenciaToStr(t: TIdLocalIncidencia): string;
+begin
+  Result := TIdLocalIncidenciaArrayStrings[t];
+end;
+
+function StrToIdLocalIncidencia(const s: string): TIdLocalIncidencia;
+var
+  idx: TIdLocalIncidencia;
+begin
+  for idx:= Low(TIdLocalIncidenciaArrayStrings) to High(TIdLocalIncidenciaArrayStrings) do
+  begin
+    if (TIdLocalIncidenciaArrayStrings[idx] = s) then
+    begin
+      Result := idx;
+      exit;
+    end;
+  end;
+  raise EACBrException.CreateFmt('Valor string inválido para TIdLocalIncidencia: %s', [s]);
+end;
+
+
 // Reforma Tributária
+function cStatToStr(const t: Integer): string;
+begin
+  case t of
+    100: Result := 'NFS-e Gerada';
+    101: Result := 'NFS-e de Substituição Gerada';
+    102: Result := 'NFS-e de Decisão Judicial';
+    103: Result := 'NFS-e Avulsa';
+  else
+    Result := IntToStr(t);
+  end;
+end;
+
 function finNFSeToStr(const t: TfinNFSe): string;
 begin
   Result := TfinNFSeArrayStrings[t];
@@ -14085,6 +14175,11 @@ begin
     end;
   end;
   raise EACBrException.CreateFmt('Valor string inválido para TfinNFSe: %s', [s]);
+end;
+
+function finNFSeToStrText(const t: TfinNFSe): string;
+begin
+  Result := TfinNFSeDescricaoArrayStrings[t];
 end;
 
 function indFinalToStr(const t: TindFinal): string;
@@ -14219,25 +14314,111 @@ begin
     raise EACBrException.CreateFmt('Valor string inválido para TtpOperGovNFSe: %s', [s]);
 end;
 
-(*
-function modoPrestServToStr(const t: TmodoPrestServ): string;
+// Funções de conversão de Enumerados para String e vice versa
+
+function StrTipoRPSToEnum(const s: string): TTipoRPS;
+var
+  LStr: string;
+  Code: Integer;
 begin
-  Result := TmodoPrestServArrayStrings[t];
+  LStr := 'tr' + s;
+
+  Code := GetEnumValue(TypeInfo(TTipoRPS), LStr);
+
+  if Code = -1 then
+    Result := trRPS
+  else
+    Result := TTipoRPS(Code);
 end;
 
-function StrTomodoPrestServ(const s: string): TmodoPrestServ;
-var
-  idx: TmodoPrestServ;
+function EnumToStrTipoRPS(const t: TTipoRPS): string;
 begin
-  for idx:= Low(TmodoPrestServArrayStrings) to High(TmodoPrestServArrayStrings) do
-  begin
-    if (TmodoPrestServArrayStrings[idx] = s) then
-    begin
-      Result := idx;
-      exit;
-    end;
-  end;
-  raise EACBrException.CreateFmt('Valor string inválido para TmodoPrestServ: %s', [s]);
+  Result := GetEnumName(TypeInfo(TTipoRPS), Ord(t));
+  Result := Copy(Result, 3, Length(Result));
 end;
-*)
+
+function ListaStrTipoRPS: string;
+var
+  idx: TTipoRPS;
+  Lista: string;
+begin
+  Lista := '';
+  for idx := Low(TTipoRPS) to High(TTipoRPS) do
+  begin
+    Lista := Lista + '; ' + EnumToStrTipoRPS(idx);
+  end;
+
+  Result := Copy(Lista, 3, Length(Lista));
+end;
+
+function StrSimNaoToEnum(const s: string): TnfseSimNao;
+var
+  LStr: string;
+  Code: Integer;
+begin
+  LStr := 'sn' + s;
+
+  Code := GetEnumValue(TypeInfo(TnfseSimNao), LStr);
+
+  if Code = -1 then
+    Result := snNao
+  else
+    Result := TnfseSimNao(Code);
+end;
+
+function EnumToStrSimNao(const t: TnfseSimNao): string;
+begin
+  Result := GetEnumName(TypeInfo(TnfseSimNao), Ord(t));
+  Result := Copy(Result, 3, Length(Result));
+end;
+
+function ListaStrSimNao: string;
+var
+  idx: TnfseSimNao;
+  Lista: string;
+begin
+  Lista := '';
+  for idx := Low(TnfseSimNao) to High(TnfseSimNao) do
+  begin
+    Lista := Lista + '; ' + EnumToStrSimNao(idx);
+  end;
+
+  Result := Copy(Lista, 3, Length(Lista));
+end;
+
+function StrTipoPessoaToEnum(const s: string): TTipoPessoa;
+var
+  LStr: string;
+  Code: Integer;
+begin
+  LStr := 'tp' + s;
+
+  Code := GetEnumValue(TypeInfo(TTipoPessoa), LStr);
+
+  if Code = -1 then
+    Result := tpPFNaoIdentificada
+  else
+    Result := TTipoPessoa(Code);
+end;
+
+function EnumToStrTipoPessoa(const t: TTipoPessoa): string;
+begin
+  Result := GetEnumName(TypeInfo(TTipoPessoa), Ord(t));
+  Result := Copy(Result, 3, Length(Result));
+end;
+
+function ListaStrTipoPessoa: string;
+var
+  idx: TTipoPessoa;
+  Lista: string;
+begin
+  Lista := '';
+  for idx := Low(TTipoPessoa) to High(TTipoPessoa) do
+  begin
+    Lista := Lista + '; ' + EnumToStrTipoPessoa(idx);
+  end;
+
+  Result := Copy(Lista, 3, Length(Lista));
+end;
+
 end.

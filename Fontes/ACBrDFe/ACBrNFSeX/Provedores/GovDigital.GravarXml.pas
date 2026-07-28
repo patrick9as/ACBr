@@ -106,7 +106,7 @@ begin
   Result.AppendChild(AddNode(tcInt, '#32', 'MunicipioPrestacao', 7, 7, NrOcorrMunPrest,
                                NFSe.Servico.CodigoMunicipioLocalPrestacao, ''));
 
-  Result.AppendChild(AddNode(tcStr, '#41', 'PaisPrestacao', 4, 4, 0,
+  Result.AppendChild(AddNode(tcInt, '#41', 'PaisPrestacao', 4, 4, 0,
                                                   NFSe.Servico.CodigoPais, ''));
 
   Result.AppendChild(AddNode(tcStr, '#32', 'CodigoNBS', 1, 9, 0,
@@ -121,17 +121,33 @@ begin
 end;
 
 function TNFSeW_GovDigital200.GerarValores: TACBrXmlNode;
+var
+  sCST, sRet: string;
 begin
   Result := inherited GerarValores;
 
-  if (NFSe.Servico.Valores.ValorPis>0) or (NFSe.Servico.Valores.ValorCofins>0) then
+  if (NFSe.Servico.Valores.ValorPis > 0) or (NFSe.Servico.Valores.ValorCofins > 0) then
   begin
-    Result.AppendChild(AddNode(tcStr, '#1', 'CST', 2, 2, 0,
-                                 CSTPisToStr(NFSe.Servico.Valores.CSTPis), ''));
+    // Tenta CSTPis primeiro, usa tribFed.CST como fallback
+    sCST := CSTPisToStr(NFSe.Servico.Valores.CSTPis);
+    if sCST = '' then
+      sCST := CSTToStr(NFSe.Servico.Valores.tribFed.CST);
+    if sCST = '' then
+      sCST := '01'; // fallback final: operação tributável alíquota normal
 
-    if not (StrToIntDef(CSTPisToStr(NFSe.Servico.Valores.CSTPis),0) in [0,8,9]) then
-      Result.AppendChild(AddNode(tcStr, '#1', 'TpRetPisCofins', 1, 1, 0,
-                 tpRetPisCofinsToStr(NFSe.Servico.Valores.tpRetPisCofins), ''));
+    Result.AppendChild(AddNode(tcStr, '#1', 'CST', 2, 2, 1, sCST, ''));
+
+    if not (StrToIntDef(sCST, 0) in [0, 8, 9]) then
+    begin
+      // Tenta tpRetPisCofins, usa tribFed como fallback
+      sRet := tpRetPisCofinsToStr(NFSe.Servico.Valores.tpRetPisCofins);
+      if sRet = '' then
+        sRet := tpRetPisCofinsToStr(NFSe.Servico.Valores.tribFed.tpRetPisCofins);
+      if sRet = '' then
+        sRet := '1'; // fallback final: retido
+
+      Result.AppendChild(AddNode(tcStr, '#1', 'TpRetPisCofins', 1, 1, 1, sRet, ''));
+    end;
   end;
 end;
 

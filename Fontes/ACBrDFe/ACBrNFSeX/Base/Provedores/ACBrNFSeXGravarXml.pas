@@ -125,6 +125,7 @@ type
 
     FParamsTabW: TStrings;
     FIniParamsTabW: TMemIniFile;
+    FNrOcorrnNFSe: Integer;
 
     function GetOpcoes: TXmlWriterOptions;
     procedure SetOpcoes(AValue: TXmlWriterOptions);
@@ -178,7 +179,7 @@ type
     function GerarXMLEnderecoNacionalDestinatario(endNac: TendNac): TACBrXmlNode;
     function GerarXMLEnderecoExteriorDestinatario(endExt: TendExt): TACBrXmlNode;
 
-    function GerarXMLImovel(Imovel: TDadosimovel): TACBrXmlNode;
+    function GerarXMLImovel(Imovel: TDadosimovel): TACBrXmlNode; virtual;
     function GerarXMLEnderecoNacionalImovel(ender: TenderImovel): TACBrXmlNode;
     function GerarXMLEnderecoExteriorImovel(endExt: TendExt): TACBrXmlNode;
 
@@ -192,7 +193,7 @@ type
 
     function GerarXMLTributos(trib: Ttrib): TACBrXmlNode;
     function GerarXMLgIBSCBS(gIBSCBS: TgIBSCBS): TACBrXmlNode; virtual;
-    function GerarXMLgTribRegular(gTribRegular: TgTribRegular): TACBrXmlNode;
+    function GerarXMLgTribRegular(gTribRegular: TgTribRegular): TACBrXmlNode; virtual;
     function GerarXMLgDif(gDif: TgDif): TACBrXmlNode;
     // Reforma Tributária DPS
     procedure GerarINIIBSCBS(AINIRec: TMemIniFile; IBSCBS: TIBSCBSDPS); virtual;
@@ -274,6 +275,7 @@ type
     property NrOcorrfinNFSe: Integer read FNrOcorrfinNFSe write FNrOcorrfinNFSe;
     property NrOcorrindFinal: Integer read FNrOcorrindFinal write FNrOcorrindFinal;
     property NrOcorrcIndOp: Integer read FNrOcorrcIndOp write FNrOcorrcIndOp;
+    property NrOcorrnNFSe: Integer read FNrOcorrnNFSe write FNrOcorrnNFSe;
 
     property TagIBSCBS: string read FTagIBSCBS write FTagIBSCBS;
     property TagCST: string read FTagCST write FTagCST;
@@ -383,6 +385,7 @@ begin
   FNrOcorrcCredPres := 0;
   FNrOcorrCSTReg := 1;
   FNrOcorrtpAmb := 1;
+  FNrOcorrnNFSe := 1;
 
   FTagIBSCBS := 'IBSCBS';
   FTagCST := 'CST';
@@ -626,7 +629,7 @@ begin
 
     filsComFormatacaoSemZeroEsquerda:
       if Copy(item, 1, 1) = '0' then
-        Result := Copy(item, 2, 4)
+        Result := Copy(item, 2, Length(item))
       else
         Result := item;
 
@@ -635,7 +638,7 @@ begin
         Result := OnlyNumber(item);
 
         if Copy(Result, 1, 1) = '0' then
-          Result := Copy(Result, 2, 4);
+          Result := Copy(Result, 2, Length(Result));
       end
   else
     Result := item;
@@ -689,17 +692,23 @@ var
   i: Integer;
   item: string;
 begin
-  if Length(Codigo) <= 5 then
-  begin
-    item := OnlyNumber(Codigo);
+  item := OnlyNumber(Codigo);
 
+  if Length(item) >= 5 then
+  begin
+    i := StrToIntDef(item, 0);
+    item := Poem_Zeros(i, 6);
+
+    Result := Copy(item, 1, 2) + '.' + Copy(item, 3, 2) + '.' + Copy(item, 5, 2);
+  end;
+
+  if Length(item) <= 4 then
+  begin
     i := StrToIntDef(item, 0);
     item := Poem_Zeros(i, 4);
 
     Result := Copy(item, 1, 2) + '.' + Copy(item, 3, 2);
-  end
-  else
-    Result := Codigo;
+  end;
 end;
 
 function TNFSeWClass.GetOpcoes: TXmlWriterOptions;
@@ -797,15 +806,14 @@ end;
 
 function TNFSeWClass.GerarCNPJ(const CNPJ: string): TACBrXmlNode;
 begin
-  Result := AddNode(tcStr, '#34', 'Cnpj', 14, 14, 1, OnlyNumber(CNPJ), DSC_CNPJ);
+  Result := AddNode(tcStr, '#34', 'Cnpj', 14, 14, 1, OnlyCPFCNPJAlphaNum(CNPJ), DSC_CNPJ);
 end;
 
 function TNFSeWClass.GerarCPFCNPJ(const CPFCNPJ: string): TACBrXmlNode;
 var
   aDoc: string;
 begin
-  // Em conformidade com a versão 1 do layout da ABRASF não deve ser alterado
-  aDoc := OnlyNumber(CPFCNPJ);
+  aDoc := OnlyAlphaNum(CPFCNPJ);
 
   Result := CreateElement('CpfCnpj');
 
@@ -1657,6 +1665,9 @@ begin
   Result.AppendChild(AddNode(tcStr, '#1', 'xLocalidadeIncid', 1, 15, 1,
                                      NFSe.infNFSe.IBSCBS.xLocalidadeIncid, ''));
 
+  Result.AppendChild(AddNode(tcDe2, '#1', 'pRedutor', 1, 15, 0,
+                                             NFSe.infNFSe.IBSCBS.pRedutor, ''));
+
   Result.AppendChild(GerarXMLIBSCBSValores(NFSe.infNFSe.IBSCBS.Valores));
   Result.AppendChild(GerarXMLIBSCBSTotCIBS(NFSe.infNFSe.IBSCBS.totCIBS));
 end;
@@ -1681,7 +1692,7 @@ begin
   Result.AppendChild(AddNode(tcDe2, '#1', 'pIBSUF', 1, 7, 1,
                                                          ValoresUF.pIBSUF, ''));
 
-  Result.AppendChild(AddNode(tcDe2, '#1', 'pRedAliqUF', 1, 7, 1,
+  Result.AppendChild(AddNode(tcDe2, '#1', 'pRedAliqUF', 1, 7, 0,
                                                      ValoresUF.pRedAliqUF, ''));
 
   Result.AppendChild(AddNode(tcDe2, '#1', 'pAliqEfetUF', 1, 7, 1,
@@ -1696,7 +1707,7 @@ begin
   Result.AppendChild(AddNode(tcDe2, '#1', 'pIBSMun', 1, 7, 1,
                                                        ValoresMun.pIBSMun, ''));
 
-  Result.AppendChild(AddNode(tcDe2, '#1', 'pRedAliqMun', 1, 7, 1,
+  Result.AppendChild(AddNode(tcDe2, '#1', 'pRedAliqMun', 1, 7, 0,
                                                    ValoresMun.pRedAliqMun, ''));
 
   Result.AppendChild(AddNode(tcDe2, '#1', 'pAliqEfetMun', 1, 7, 1,
@@ -1711,7 +1722,7 @@ begin
   Result.AppendChild(AddNode(tcDe2, '#1', 'pCBS', 1, 7, 1,
                                                           ValoresFed.pCBS, ''));
 
-  Result.AppendChild(AddNode(tcDe2, '#1', 'pRedAliqCBS', 1, 7, 1,
+  Result.AppendChild(AddNode(tcDe2, '#1', 'pRedAliqCBS', 1, 7, 0,
                                                    ValoresFed.pRedAliqCBS, ''));
 
   Result.AppendChild(AddNode(tcDe2, '#1', 'pAliqEfetCBS', 1, 7, 1,

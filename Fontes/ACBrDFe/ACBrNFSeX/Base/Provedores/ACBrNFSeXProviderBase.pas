@@ -54,6 +54,10 @@ type
     FConfigSchemas: TConfigSchemas;
     FDefaultNameSpaceURI: string;
 
+    {$IFDEF ACBR_API}
+    procedure FillHttpInfo(AResponse: TNFSeWebserviceResponse; AService: TACBrNFSeXWebservice);
+    {$ENDIF}
+
     function GetConfigGeral: TConfigGeral;
     function GetConfigWebServices: TConfigWebServices;
     function GetConfigMsgDados: TConfigMsgDados;
@@ -896,66 +900,70 @@ end;
 procedure TACBrNFSeXProvider.CarregarURL;
 var
   IniParams: TMemIniFile;
-  Sessao: String;
-  APIPropria, ParamsCarregado: Boolean;
+  Sessao, lValorParams: String;
+  APIPropria{, ParamsCarregado}, lIgnoraParamsProvedor: Boolean;
 
-  procedure CarregarURLPadraoNacional;
+  procedure CarregarURLPadraoNacional(const AIgnorarParamsProvedor: Boolean);
   begin
-    if ConfigGeral.Params.ParamTemValor('ServicosPadraoNacional', 'ConsultarNFSeRPS') then
+    if AIgnorarParamsProvedor then
+      exit;
+
+    if ConfigGeral.Params.ParamTemValor('ServicosPadraoNacional', 'ConsultarNFSeRPS') and
+       not(ConfigGeral.Params.ParamTemValor('ServicosAPIPropria', 'ConsultarNFSeRPS')) then
     begin
       ConfigWebServices.LoadUrlProducaoAPIPadraoNacional(IniParams, 'ConsultarNFSeRPS');
       ConfigWebServices.LoadUrlHomologacaoAPIPadraoNacional(IniParams, 'ConsultarNFSeRPS');
     end;
 
-    if ConfigGeral.Params.ParamTemValor('ServicosPadraoNacional', 'ConsultarNFSePorChave') then
+    if ConfigGeral.Params.ParamTemValor('ServicosPadraoNacional', 'ConsultarNFSePorChave') and
+          not(ConfigGeral.Params.ParamTemValor('ServicosAPIPropria', 'ConsultarNFSePorChave')) then 
     begin
       ConfigWebServices.LoadUrlProducaoAPIPadraoNacional(IniParams, 'ConsultarNFSePorChave');
       ConfigWebServices.LoadUrlHomologacaoAPIPadraoNacional(IniParams, 'ConsultarNFSePorChave');
     end;
 
-    if ConfigGeral.Params.ParamTemValor('ServicosPadraoNacional', 'EnviarEvento') then
+    if ConfigGeral.Params.ParamTemValor('ServicosPadraoNacional', 'EnviarEvento') and
+       not(ConfigGeral.Params.ParamTemValor('ServicosAPIPropria', 'EnviarEvento')) then    
     begin
       ConfigWebServices.LoadUrlProducaoAPIPadraoNacional(IniParams, 'EnviarEvento');
       ConfigWebServices.LoadUrlHomologacaoAPIPadraoNacional(IniParams, 'EnviarEvento');
     end;
 
-    if ConfigGeral.Params.ParamTemValor('ServicosPadraoNacional', 'ConsultarEvento') then
+    if ConfigGeral.Params.ParamTemValor('ServicosPadraoNacional', 'ConsultarEvento') and
+       not(ConfigGeral.Params.ParamTemValor('ServicosAPIPropria', 'ConsultarEvento')) then    
     begin
       ConfigWebServices.LoadUrlProducaoAPIPadraoNacional(IniParams, 'ConsultarEvento');
       ConfigWebServices.LoadUrlHomologacaoAPIPadraoNacional(IniParams, 'ConsultarEvento');
     end;
 
-    if ConfigGeral.Params.ParamTemValor('ServicosPadraoNacional', 'ConsultarDFe') then
+    if ConfigGeral.Params.ParamTemValor('ServicosPadraoNacional', 'ConsultarDFe') and
+       not(ConfigGeral.Params.ParamTemValor('ServicosAPIPropria', 'ConsultarDFe')) then    
     begin
       ConfigWebServices.LoadUrlProducaoAPIPadraoNacional(IniParams, 'ConsultarDFe');
       ConfigWebServices.LoadUrlHomologacaoAPIPadraoNacional(IniParams, 'ConsultarDFe');
     end;
 
-    if ConfigGeral.Params.ParamTemValor('ServicosPadraoNacional', 'ConsultarParam') then
+    if ConfigGeral.Params.ParamTemValor('ServicosPadraoNacional', 'ConsultarParam') and
+       not(ConfigGeral.Params.ParamTemValor('ServicosAPIPropria', 'ConsultarParam')) then    
     begin
       ConfigWebServices.LoadUrlProducaoAPIPadraoNacional(IniParams, 'ConsultarParam');
       ConfigWebServices.LoadUrlHomologacaoAPIPadraoNacional(IniParams, 'ConsultarParam');
     end;
 
-    if ConfigGeral.Params.ParamTemValor('ServicosPadraoNacional', 'ObterDANFSE') then
+    if ConfigGeral.Params.ParamTemValor('ServicosPadraoNacional', 'ObterDANFSE') and
+       not(ConfigGeral.Params.ParamTemValor('ServicosAPIPropria', 'ObterDANFSE')) then    
     begin
       ConfigWebServices.LoadUrlProducaoAPIPadraoNacional(IniParams, 'ObterDANFSE');
       ConfigWebServices.LoadUrlHomologacaoAPIPadraoNacional(IniParams, 'ObterDANFSE');
     end;
 
-    if (ConfigWebServices.Producao.LinkURL = '') or
-       (TACBrNFSeX(FAOwner).Configuracoes.Geral.Provedor = proPadraoNacional) then
-    begin
-      Sessao := 'PadraoNacional';
-      ConfigWebServices.LoadlinkUrlProducao(IniParams, Sessao);
-    end;
+    if (ConfigWebServices.Producao.LinkURL = '') and
+       (ConfigGeral.Params.ParamTemValor('ServicosPadraoNacional', 'LinkNFSe')) then
+      ConfigWebServices.LoadlinkUrlProducao(IniParams, 'PadraoNacional');
 
-    if (ConfigWebServices.Homologacao.LinkURL = '') or
-       (TACBrNFSeX(FAOwner).Configuracoes.Geral.Provedor = proPadraoNacional) then
-    begin
-      Sessao := 'PadraoNacional';
-      ConfigWebServices.LoadLinkUrlHomologacao(IniParams, Sessao);
-    end;
+    if (ConfigWebServices.Homologacao.LinkURL = '') and
+       (ConfigGeral.Params.ParamTemValor('ServicosPadraoNacional', 'LinkNFSe')) then
+      ConfigWebServices.LoadLinkUrlHomologacao(IniParams, 'PadraoNacional');
   end;
 begin
   IniParams := TMemIniFile.Create('');
@@ -981,14 +989,26 @@ begin
     ConfigWebServices.LoadSoapActionHomologacao(IniParams, Sessao);
     // Verifica se na seção da cidade tem o campo Params
     ConfigGeral.LoadParams(IniParams, Sessao);
-    ParamsCarregado := ConfigGeral.Params.AsString <> '';
+    lValorParams := IniParams.ReadString(Sessao, 'Params', '');
+    lIgnoraParamsProvedor := False;
+    lIgnoraParamsProvedor := (POS('*:', lValorParams) > 0) or
+                             (POS('*|', lValorParams) > 0) or
+                             (POS('*', lValorParams) > 0) or
+                             (lValorParams = '*');
+//    ParamsCarregado := ConfigGeral.Params.AsString <> '';
+    {
     // Carrega as URLs dos Serviços do Padrão Nacional caso constam no Params
     CarregarURLPadraoNacional;
+    }
 
     // Depois verifica as URLs definidas para o provedor
     Sessao := TACBrNFSeX(FAOwner).Configuracoes.Geral.xProvedor;
+    ConfigGeral.LoadParams(IniParams, Sessao);
+
+    if(not(lIgnoraParamsProvedor))then
+      lValorParams := lValorParams + IniParams.ReadString(Sessao, 'Params', '');
     // Verifica se na seção do provedor tem o Params: APIPropria
-    APIPropria := (Pos('APIPropria:', IniParams.ReadString(Sessao, 'Params', '')) > 0);
+    APIPropria := (Pos('APIPropria:', lValorParams) > 0);
 
     if not APIPropria then
     begin
@@ -1025,6 +1045,9 @@ begin
         ConfigWebServices.LoadLinkUrlHomologacao(IniParams, Sessao);
     end;
 
+    // Carrega as URLs dos Serviços do Padrão Nacional caso constam no Params
+    CarregarURLPadraoNacional(lIgnoraParamsProvedor);
+
     if ConfigWebServices.Producao.XMLNameSpace = '' then
       ConfigWebServices.LoadXMLNameSpaceProducao(IniParams, Sessao);
 
@@ -1042,7 +1065,7 @@ begin
 
     if ConfigWebServices.Homologacao.SoapAction = '' then
       ConfigWebServices.LoadSoapActionHomologacao(IniParams, Sessao);
-
+{
     if not ParamsCarregado then
     begin
       // Verifica se na seção do Provedor tem o campo Params
@@ -1050,7 +1073,7 @@ begin
       // Carrega as URLs dos Serviços do Padrão Nacional caso constam no Params
       CarregarURLPadraoNacional;
     end;
-
+}
     {
       O campo Params só pode constar na seção da cidade ou do provedor.
     }
@@ -1577,10 +1600,10 @@ begin
 
     Result := AWriter.GerarXml;
 
-    aXml := AWriter.ConteudoTxt;
+    aXml := ACBrStr(AWriter.ConteudoTxt);
 
     if aXml = '' then
-      aXml := AWriter.Document.Xml;
+      aXml := ACBrStr(AWriter.Document.Xml);
 
     aAlerts := ACBrStr(AWriter.ListaDeAlertas.Text);
   finally
@@ -1857,6 +1880,27 @@ begin
                             exiImunidade, exiSuspensaDecisaoJudicial,
                             exiSuspensaProcessoAdministrativo, exiISSFixo]);
 end;
+
+{$IFDEF ACBR_API}
+procedure TACBrNFSeXProvider.FillHttpInfo(AResponse: TNFSeWebserviceResponse;
+  AService: TACBrNFSeXWebservice);
+begin
+  AResponse.ReqUrl := AService.URL;
+  AResponse.ReqMethod := AService.Method;
+  AResponse.ReqContentType := AService.MimeType;
+  AResponse.ReqHeaders := AService.ReqHeaders;
+  AResponse.ReqContentLength := AService.ReqContentLength;
+  AResponse.ReqContent := AService.ReqContent;
+  AResponse.RespHeaders := AService.RespHeaders;
+  AResponse.RespStatusCode := AService.RespStatusCode;
+  AResponse.RespContentLength := AService.RespContentLength;
+  AResponse.RespContent := AService.RespContent;
+  AResponse.RespTime := AService.RespTime;
+
+  AResponse.EnvelopeEnvio := AService.Envio;
+  AResponse.EnvelopeRetorno := AService.Retorno;
+end;
+{$ENDIF}
 
 function TACBrNFSeXProvider.StrToExigibilidadeISS(out ok: boolean;
   const s: string): TnfseExigibilidadeISS;
@@ -2273,6 +2317,10 @@ begin
       EmiteResponse.Sucesso := True;
       EmiteResponse.EnvelopeEnvio := AService.Envio;
       EmiteResponse.EnvelopeRetorno := AService.Retorno;
+
+      {$IFDEF ACBR_API}
+      FillHttpInfo(EmiteResponse, AService);
+      {$ENDIF}
     except
       on E:Exception do
       begin
@@ -2280,6 +2328,10 @@ begin
         begin
           EmiteResponse.EnvelopeEnvio := AService.Envio;
           EmiteResponse.EnvelopeRetorno := AService.Retorno;
+
+          {$IFDEF ACBR_API}
+          FillHttpInfo(EmiteResponse, AService);
+          {$ENDIF}
         end;
 
         AErro := EmiteResponse.Erros.New;
@@ -2350,6 +2402,10 @@ begin
       ConsultaSituacaoResponse.Sucesso := True;
       ConsultaSituacaoResponse.EnvelopeEnvio := AService.Envio;
       ConsultaSituacaoResponse.EnvelopeRetorno := AService.Retorno;
+
+      {$IFDEF ACBR_API}
+      FillHttpInfo(ConsultaSituacaoResponse, AService);
+      {$ENDIF}
     except
       on E:Exception do
       begin
@@ -2357,6 +2413,10 @@ begin
         begin
           ConsultaSituacaoResponse.EnvelopeEnvio := AService.Envio;
           ConsultaSituacaoResponse.EnvelopeRetorno := AService.Retorno;
+
+          {$IFDEF ACBR_API}
+          FillHttpInfo(ConsultaSituacaoResponse, AService);
+          {$ENDIF}
         end;
 
         AErro := ConsultaSituacaoResponse.Erros.New;
@@ -2426,6 +2486,10 @@ begin
       ConsultaLoteRpsResponse.Sucesso := True;
       ConsultaLoteRpsResponse.EnvelopeEnvio := AService.Envio;
       ConsultaLoteRpsResponse.EnvelopeRetorno := AService.Retorno;
+
+      {$IFDEF ACBR_API}
+      FillHttpInfo(ConsultaLoteRpsResponse, AService);
+      {$ENDIF}
     except
       on E:Exception do
       begin
@@ -2433,6 +2497,10 @@ begin
         begin
           ConsultaLoteRpsResponse.EnvelopeEnvio := AService.Envio;
           ConsultaLoteRpsResponse.EnvelopeRetorno := AService.Retorno;
+
+          {$IFDEF ACBR_API}
+          FillHttpInfo(ConsultaLoteRpsResponse, AService);
+          {$ENDIF}
         end;
 
         AErro := ConsultaLoteRpsResponse.Erros.New;
@@ -2503,6 +2571,10 @@ begin
       ConsultaNFSeporRpsResponse.Sucesso := True;
       ConsultaNFSeporRpsResponse.EnvelopeEnvio := AService.Envio;
       ConsultaNFSeporRpsResponse.EnvelopeRetorno := AService.Retorno;
+
+      {$IFDEF ACBR_API}
+      FillHttpInfo(ConsultaNFSeporRpsResponse, AService);
+      {$ENDIF}
     except
       on E:Exception do
       begin
@@ -2510,6 +2582,10 @@ begin
         begin
           ConsultaNFSeporRpsResponse.EnvelopeEnvio := AService.Envio;
           ConsultaNFSeporRpsResponse.EnvelopeRetorno := AService.Retorno;
+
+          {$IFDEF ACBR_API}
+          FillHttpInfo(ConsultaNFSeporRpsResponse, AService);
+          {$ENDIF}
         end;
 
         AErro := ConsultaNFSeporRpsResponse.Erros.New;
@@ -2580,6 +2656,10 @@ begin
       ConsultarEventoResponse.Sucesso := True;
       ConsultarEventoResponse.EnvelopeEnvio := AService.Envio;
       ConsultarEventoResponse.EnvelopeRetorno := AService.Retorno;
+
+      {$IFDEF ACBR_API}
+      FillHttpInfo(ConsultarEventoResponse, AService);
+      {$ENDIF}
     except
       on E:Exception do
       begin
@@ -2587,6 +2667,10 @@ begin
         begin
           ConsultarEventoResponse.EnvelopeEnvio := AService.Envio;
           ConsultarEventoResponse.EnvelopeRetorno := AService.Retorno;
+
+          {$IFDEF ACBR_API}
+          FillHttpInfo(ConsultarEventoResponse, AService);
+          {$ENDIF}
         end;
 
         AErro := ConsultarEventoResponse.Erros.New;
@@ -2658,6 +2742,10 @@ begin
       ConsultarParamResponse.Sucesso := True;
       ConsultarParamResponse.EnvelopeEnvio := AService.Envio;
       ConsultarParamResponse.EnvelopeRetorno := AService.Retorno;
+
+      {$IFDEF ACBR_API}
+      FillHttpInfo(ConsultarParamResponse, AService);
+      {$ENDIF}
     except
       on E:Exception do
       begin
@@ -2665,6 +2753,10 @@ begin
         begin
           ConsultarParamResponse.EnvelopeEnvio := AService.Envio;
           ConsultarParamResponse.EnvelopeRetorno := AService.Retorno;
+
+          {$IFDEF ACBR_API}
+          FillHttpInfo(ConsultarParamResponse, AService);
+          {$ENDIF}
         end;
 
         AErro := ConsultarParamResponse.Erros.New;
@@ -2735,6 +2827,10 @@ begin
       ConsultarDFeResponse.Sucesso := True;
       ConsultarDFeResponse.EnvelopeEnvio := AService.Envio;
       ConsultarDFeResponse.EnvelopeRetorno := AService.Retorno;
+
+      {$IFDEF ACBR_API}
+      FillHttpInfo(ConsultarDFeResponse, AService);
+      {$ENDIF}
     except
       on E:Exception do
       begin
@@ -2742,6 +2838,10 @@ begin
         begin
           ConsultarDFeResponse.EnvelopeEnvio := AService.Envio;
           ConsultarDFeResponse.EnvelopeRetorno := AService.Retorno;
+
+          {$IFDEF ACBR_API}
+          FillHttpInfo(ConsultarDFeResponse, AService);
+          {$ENDIF}
         end;
 
         AErro := ConsultarDFeResponse.Erros.New;
@@ -2853,6 +2953,10 @@ begin
       ConsultaNFSeResponse.EnvelopeEnvio := AService.Envio;
       ConsultaNFSeResponse.EnvelopeRetorno := AService.Retorno;
       ConsultaNFSeResponse.HtmlRetorno := AService.HtmlRetorno;
+
+      {$IFDEF ACBR_API}
+      FillHttpInfo(ConsultaNFSeResponse, AService);
+      {$ENDIF}
     except
       on E:Exception do
       begin
@@ -2860,6 +2964,10 @@ begin
         begin
           ConsultaNFSeResponse.EnvelopeEnvio := AService.Envio;
           ConsultaNFSeResponse.EnvelopeRetorno := AService.Retorno;
+
+          {$IFDEF ACBR_API}
+          FillHttpInfo(ConsultaNFSeResponse, AService);
+          {$ENDIF}
         end;
 
         AErro := ConsultaNFSeResponse.Erros.New;
@@ -2929,6 +3037,10 @@ begin
       ConsultaLinkNFSeResponse.Sucesso := True;
       ConsultaLinkNFSeResponse.EnvelopeEnvio := AService.Envio;
       ConsultaLinkNFSeResponse.EnvelopeRetorno := AService.Retorno;
+
+      {$IFDEF ACBR_API}
+      FillHttpInfo(ConsultaLinkNFSeResponse, AService);
+      {$ENDIF}
     except
       on E:Exception do
       begin
@@ -2936,6 +3048,10 @@ begin
         begin
           ConsultaLinkNFSeResponse.EnvelopeEnvio := AService.Envio;
           ConsultaLinkNFSeResponse.EnvelopeRetorno := AService.Retorno;
+
+          {$IFDEF ACBR_API}
+          FillHttpInfo(ConsultaLinkNFSeResponse, AService);
+          {$ENDIF}
         end;
 
         AErro := ConsultaLinkNFSeResponse.Erros.New;
@@ -3016,6 +3132,10 @@ begin
       CancelaNFSeResponse.Sucesso := True;
       CancelaNFSeResponse.EnvelopeEnvio := AService.Envio;
       CancelaNFSeResponse.EnvelopeRetorno := AService.Retorno;
+
+      {$IFDEF ACBR_API}
+      FillHttpInfo(CancelaNFSeResponse, AService);
+      {$ENDIF}
     except
       on E:Exception do
       begin
@@ -3023,6 +3143,10 @@ begin
         begin
           CancelaNFSeResponse.EnvelopeEnvio := AService.Envio;
           CancelaNFSeResponse.EnvelopeRetorno := AService.Retorno;
+
+          {$IFDEF ACBR_API}
+          FillHttpInfo(CancelaNFSeResponse, AService);
+          {$ENDIF}
         end;
 
         AErro := CancelaNFSeResponse.Erros.New;
@@ -3150,6 +3274,10 @@ begin
       SubstituiNFSeResponse.Sucesso := True;
       SubstituiNFSeResponse.EnvelopeEnvio := AService.Envio;
       SubstituiNFSeResponse.EnvelopeRetorno := AService.Retorno;
+
+      {$IFDEF ACBR_API}
+      FillHttpInfo(SubstituiNFSeResponse, AService);
+      {$ENDIF}
     except
       on E:Exception do
       begin
@@ -3157,6 +3285,10 @@ begin
         begin
           SubstituiNFSeResponse.EnvelopeEnvio := AService.Envio;
           SubstituiNFSeResponse.EnvelopeRetorno := AService.Retorno;
+
+          {$IFDEF ACBR_API}
+          FillHttpInfo(SubstituiNFSeResponse, AService);
+          {$ENDIF}
         end;
 
         AErro := SubstituiNFSeResponse.Erros.New;
@@ -3226,6 +3358,10 @@ begin
       GerarTokenResponse.Sucesso := True;
       GerarTokenResponse.EnvelopeEnvio := AService.Envio;
       GerarTokenResponse.EnvelopeRetorno := AService.Retorno;
+
+      {$IFDEF ACBR_API}
+      FillHttpInfo(GerarTokenResponse, AService);
+      {$ENDIF}
     except
       on E:Exception do
       begin
@@ -3233,6 +3369,10 @@ begin
         begin
           GerarTokenResponse.EnvelopeEnvio := AService.Envio;
           GerarTokenResponse.EnvelopeRetorno := AService.Retorno;
+
+          {$IFDEF ACBR_API}
+          FillHttpInfo(GerarTokenResponse, AService);
+          {$ENDIF}
         end;
 
         AErro := GerarTokenResponse.Erros.New;
@@ -3311,6 +3451,10 @@ begin
       EnviarEventoResponse.Sucesso := True;
       EnviarEventoResponse.EnvelopeEnvio := AService.Envio;
       EnviarEventoResponse.EnvelopeRetorno := AService.Retorno;
+
+      {$IFDEF ACBR_API}
+      FillHttpInfo(EnviarEventoResponse, AService);
+      {$ENDIF}
     except
       on E:Exception do
       begin
@@ -3318,6 +3462,10 @@ begin
         begin
           EnviarEventoResponse.EnvelopeEnvio := AService.Envio;
           EnviarEventoResponse.EnvelopeRetorno := AService.Retorno;
+
+          {$IFDEF ACBR_API}
+          FillHttpInfo(EnviarEventoResponse, AService);
+          {$ENDIF}
         end;
 
         AErro := EnviarEventoResponse.Erros.New;
@@ -3387,6 +3535,10 @@ begin
       ConsultarSeqRpsResponse.Sucesso := True;
       ConsultarSeqRpsResponse.EnvelopeEnvio := AService.Envio;
       ConsultarSeqRpsResponse.EnvelopeRetorno := AService.Retorno;
+
+      {$IFDEF ACBR_API}
+      FillHttpInfo(ConsultarSeqRpsResponse, AService);
+      {$ENDIF}
     except
       on E:Exception do
       begin
@@ -3394,6 +3546,10 @@ begin
         begin
           ConsultarSeqRpsResponse.EnvelopeEnvio := AService.Envio;
           ConsultarSeqRpsResponse.EnvelopeRetorno := AService.Retorno;
+
+          {$IFDEF ACBR_API}
+          FillHttpInfo(ConsultarSeqRpsResponse, AService);
+          {$ENDIF}
         end;
 
         AErro := ConsultarSeqRpsResponse.Erros.New;

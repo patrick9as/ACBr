@@ -49,7 +49,8 @@ type
   protected
     procedure Configuracao; override;
     function GerarServico: TACBrXmlNode; override;
-
+    function GerarDadosObra: TACBrXmlNode;
+    function GerarPrestador: TACBrXmlNode; override;
   end;
 
 implementation
@@ -67,6 +68,8 @@ uses
 procedure TNFSeW_Centi202.Configuracao;
 begin
   inherited Configuracao;
+
+  GerarIDDeclaracao := False;
 
   FormatoEmissao := tcDatHor;
   FormatoCompetencia := tcDatHor;
@@ -91,6 +94,48 @@ begin
   NrOcorrIncentCultural := -1;
 
   NrOcorrInscEstTomador_2 := 0;
+
+  GerarIDDeclaracao := False;
+  GerarIDRps := True;
+end;
+
+function TNFSeW_Centi202.GerarDadosObra: TACBrXmlNode;
+begin
+  Result := CreateElement('DadosObra');
+
+  Result.AppendChild(AddNode(tcStr, '#1', 'CnoObra', 1, 125, 0,
+    NFSe.ConstrucaoCivil.CodigoObra, ''));
+
+  Result.AppendChild(AddNode(tcStr, '#1', 'CepObra', 8, 8, 1,
+    NFSe.ConstrucaoCivil.Endereco.CEP, ''));
+
+  Result.AppendChild(AddNode(tcStr, '#1', 'LogradouroObra', 1, 125, 1,
+    NFSe.ConstrucaoCivil.Endereco.Endereco, ''));
+
+  Result.AppendChild(AddNode(tcStr, '#1', 'NumeroObra', 1, 10, 1,
+    NFSe.ConstrucaoCivil.Endereco.Numero, ''));
+
+  Result.AppendChild(AddNode(tcStr, '#1', 'BairroObra', 1, 60, 1,
+    NFSe.ConstrucaoCivil.Endereco.Bairro, ''));
+
+  Result.AppendChild(AddNode(tcStr, '#1', 'ComplementoObra', 1, 60, 0,
+    NFSe.ConstrucaoCivil.Endereco.Complemento, ''));
+end;
+
+function TNFSeW_Centi202.GerarPrestador: TACBrXmlNode;
+begin
+  Result := CreateElement('Prestador');
+
+  Result.AppendChild(GerarCPFCNPJ(NFSe.Prestador.IdentificacaoPrestador.CpfCnpj));
+
+  if NFSe.ConstrucaoCivil.Endereco.CEP <> '' then
+    Result.AppendChild(GerarDadosObra);
+
+  Result.AppendChild(AddNode(tcStr, '#1', 'RazaoSocial', 1, 115, 0,
+    NFSe.Prestador.RazaoSocial, ''));
+
+  Result.AppendChild(AddNode(tcStr, '#1', 'InscricaoMunicipal', 1, 15, 0,
+    NFSe.Prestador.IdentificacaoPrestador.InscricaoMunicipal, ''));
 end;
 
 function TNFSeW_Centi202.GerarServico: TACBrXmlNode;
@@ -114,11 +159,8 @@ begin
     Result.AppendChild(AddNode(tcStr, '#29', 'ItemListaServico', 1, 8, NrOcorrItemListaServico,
                                                           item, DSC_CLISTSERV));
 
-    Result.AppendChild(AddNode(tcStr, '#32', 'CodigoNbs', 1, 12, NrOcorrCodigoNBS,
-                                             PadLeft(NFSe.Servico.CodigoNBS, 12, '0'), DSC_CMUN));
-
-    Result.AppendChild(AddNode(tcStr, '#30', 'CodigoCnae', 1, 9, NrOcorrCodigoCNAE,
-                                OnlyNumber(NFSe.Servico.CodigoCnae), DSC_CNAE));
+    Result.AppendChild(AddNode(tcStr, '#32', 'CodigoNbs', 1, 9, NrOcorrCodigoNBS,
+                               PadLeft(NFSe.Servico.CodigoNBS, 9, '0'), DSC_CMUN));
 
     Result.AppendChild(AddNode(tcStr, '#31', 'CodigoTributacaoMunicipio', 1, 20, NrOcorrCodTribMun_1,
                      NFSe.Servico.CodigoTributacaoMunicipio, DSC_CSERVTRIBMUN));

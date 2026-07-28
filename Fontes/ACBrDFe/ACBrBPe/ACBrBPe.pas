@@ -41,11 +41,17 @@ uses
   ACBrXmlBase,
   ACBrDFe.Conversao,
   ACBrBase,
-  ACBrDFe, ACBrDFeException, ACBrDFeConfiguracoes,
-  ACBrBPeConfiguracoes, ACBrBPeWebServices, ACBrBPeBilhetes, ACBrBPeDABPEClass,
+  ACBrDFe,
+  ACBrDFeException,
+  ACBrDFeConfiguracoes,
+  ACBrBPeConfiguracoes,
+  ACBrBPeWebServices,
+  ACBrBPeBilhetes,
+  ACBrBPeDABPEClass,
   ACBrBPeClass,
-  pcnConversao,
-  ACBrBPeConversao, ACBrBPeEnvEvento;
+  ACBrBPeConversao,
+  ACBrBPeEnvEvento,
+  ACBrDFeUtil;
 
 const
   ACBRBPE_NAMESPACE = 'http://www.portalfiscal.inf.br/bpe';
@@ -68,8 +74,6 @@ type
     FWebServices: TWebServices;
 
     function GetConfiguracoes: TConfiguracoesBPe;
-//    function Distribuicao(AcUFAutor: Integer; const ACNPJCPF, AultNSU, ANSU,
-//      chBPe: String): Boolean;
 
     procedure SetConfiguracoes(AValue: TConfiguracoesBPe);
     procedure SetDABPE(const Value: TACBrBPeDABPEClass);
@@ -122,16 +126,7 @@ type
     procedure SetStatus(const stNewStatus: TStatusACBrBPe);
     procedure ImprimirEvento;
     procedure ImprimirEventoPDF;
-    {
-    function DistribuicaoDFe(AcUFAutor: Integer; const ACNPJCPF, AultNSU,
-      ANSU: String; const AchBPe: String = ''): Boolean;
-    function DistribuicaoDFePorUltNSU(AcUFAutor: Integer; const ACNPJCPF,
-      AultNSU: String): Boolean;
-    function DistribuicaoDFePorNSU(AcUFAutor: Integer; const ACNPJCPF,
-      ANSU: String): Boolean;
-    function DistribuicaoDFePorChaveBPe(AcUFAutor: Integer; const ACNPJCPF,
-      AchBPe: String): Boolean;
-    }
+
     function GravarStream(AStream: TStream): Boolean;
 
     procedure EnviarEmailEvento(const sPara, sAssunto: String;
@@ -359,13 +354,7 @@ procedure TACBrBPe.LerServicoDeParams(LayOutServico: TLayOutBPe;
 var
   AUF: String;
 begin
-  case Configuracoes.Geral.FormaEmissao of
-    pcnConversao.teNormal: AUF := Configuracoes.WebServices.UF;
-    teSVCAN: AUF := 'SVC-AN';
-    teSVCRS: AUF := 'SVC-RS';
-  else
-    AUF := Configuracoes.WebServices.UF;
-  end;
+  AUF := Configuracoes.WebServices.UF;
 
   Versao := VersaoBPeToDbl(Configuracoes.Geral.VersaoDF);
   URL := '';
@@ -377,7 +366,7 @@ end;
 function TACBrBPe.GetURLConsultaBPe(const CUF: Integer;
   const TipoAmbiente: TACBrTipoAmbiente): String;
 begin
-  Result := LerURLDeParams('BPe', CUFtoUF(CUF), TpcnTipoAmbiente(TipoAmbiente),
+  Result := LerURLDeParams('BPe', CodigoUFparaUF(CUF), TACBrTipoAmbiente(TipoAmbiente),
     'URL-ConsultaBPe', 0);
 end;
 
@@ -385,9 +374,9 @@ function TACBrBPe.GetURLQRCode(FBPe: TBPe): String;
 var
   Passo1, Passo2, urlUF, idBPe, tpEmis, sign: String;
 begin
-  urlUF := LerURLDeParams('BPe', CUFtoUF(FBPe.Ide.cUF),
-     TpcnTipoAmbiente(FBPe.Ide.tpAmb), 'URL-QRCode', 0);
-  idBPe := OnlyNumber(FBPe.infBPe.ID);
+  urlUF := LerURLDeParams('BPe', CodigoUFparaUF(FBPe.Ide.cUF),
+     TACBrTipoAmbiente(FBPe.Ide.tpAmb), 'URL-QRCode', 0);
+  idBPe := RemoverLiteralChave(FBPe.infBPe.ID);
   tpEmis := Copy(idBPe, 35, 1);
 
   Passo1 := urlUF;
@@ -446,7 +435,7 @@ begin
     with EventoBPe.Evento.New do
     begin
       infEvento.CNPJ := Bilhetes.Items[i].BPe.Emit.CNPJ;
-      infEvento.cOrgao := StrToIntDef(copy(OnlyNumber(WebServices.Consulta.BPeChave), 1, 2), 0);
+      infEvento.cOrgao := ExtrairUFChaveAcesso(WebServices.Consulta.BPeChave);
       infEvento.dhEvento := now;
       infEvento.tpEvento := teCancelamento;
       infEvento.chBPe := WebServices.Consulta.BPeChave;
@@ -547,7 +536,7 @@ begin
 
     if Bilhetes.Count > 0 then
     begin
-      chBPe := OnlyNumber(EventoBPe.Evento.Items[i].infEvento.chBPe);
+      chBPe := RemoverLiteralChave(EventoBPe.Evento.Items[i].infEvento.chBPe);
 
       // Se tem a chave da BPe no Evento, procure por ela nos bilhetes carregados //
       if NaoEstaVazio(chBPe) then
@@ -623,46 +612,7 @@ begin
   else
     DABPE.ImprimirEVENTOPDF(nil);
 end;
-{
-function TACBrBPe.Distribuicao(AcUFAutor: Integer; const ACNPJCPF, AultNSU, ANSU,
-  chBPe: String): Boolean;
-begin
-  WebServices.DistribuicaoDFe.cUFAutor := AcUFAutor;
-  WebServices.DistribuicaoDFe.CNPJCPF := ACNPJCPF;
-  WebServices.DistribuicaoDFe.ultNSU := AultNSU;
-  WebServices.DistribuicaoDFe.NSU := ANSU;
-  WebServices.DistribuicaoDFe.chBPe := chBPe;
 
-  Result := WebServices.DistribuicaoDFe.Executar;
-
-  if not Result then
-    GerarException( WebServices.DistribuicaoDFe.Msg );
-end;
-
-function TACBrBPe.DistribuicaoDFe(AcUFAutor: Integer;
-  const ACNPJCPF, AultNSU, ANSU: String; const AchBPe: String = ''): Boolean;
-begin
-  Result := Distribuicao(AcUFAutor, ACNPJCPF, AultNSU, ANSU, AchBPe);
-end;
-
-function TACBrBPe.DistribuicaoDFePorUltNSU(AcUFAutor: Integer; const ACNPJCPF,
-  AultNSU: String): Boolean;
-begin
-  Result := Distribuicao(AcUFAutor, ACNPJCPF, AultNSU, '', '');
-end;
-
-function TACBrBPe.DistribuicaoDFePorNSU(AcUFAutor: Integer; const ACNPJCPF,
-  ANSU: String): Boolean;
-begin
-  Result := Distribuicao(AcUFAutor, ACNPJCPF, '', ANSU, '');
-end;
-
-function TACBrBPe.DistribuicaoDFePorChaveBPe(AcUFAutor: Integer; const ACNPJCPF,
-  AchBPe: String): Boolean;
-begin
-  Result := Distribuicao(AcUFAutor, ACNPJCPF, '', '', AchBPe);
-end;
-}
 procedure TACBrBPe.EnviarEmailEvento(const sPara, sAssunto: String;
   sMensagem: TStrings; sCC: TStrings; Anexos: TStrings;
   sReplyTo: TStrings);
@@ -684,7 +634,7 @@ begin
     ImprimirEventoPDF;
     AnexosEmail.Add(DABPE.ArquivoPDF);
 
-    NomeArq := OnlyNumber(EventoBPe.Evento[0].InfEvento.Id);
+    NomeArq := RemoverLiteralChave(EventoBPe.Evento[0].InfEvento.Id);
     EnviarEmail(sPara, sAssunto, sMensagem, sCC, AnexosEmail, StreamBPe,
 	    NomeArq + '-procEventoBPe.xml', sReplyTo);
   finally

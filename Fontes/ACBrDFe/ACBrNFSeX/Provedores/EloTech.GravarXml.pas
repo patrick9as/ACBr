@@ -56,6 +56,8 @@ type
     function GerarInfDeclaracaoPrestacaoServico: TACBrXmlNode; override;
     function GerarXMLDestinatario(Dest: TDadosdaPessoa): TACBrXmlNode; override;
     function GerarValores: TACBrXmlNode; override;
+    function GerarServico: TACBrXmlNode; override;
+    function GerarEnderecoTomador: TACBrXmlNode; override;
 
     procedure GerarINISecaoServicos(const AINIRec: TMemIniFile); override;
     procedure GerarINISecaoDadosDeducao(const AINIRec: TMemIniFile;
@@ -92,7 +94,8 @@ begin
   NrOcorrCodTribMun_1 := -1;
   NrOcorrCodigoMunic_1 := -1;
   NrOcorrCodigoPaisServico := -1;
-  NrOcorrCodigoPaisTomador := 1;
+  NrOcorrCodigoPaisTomador := 0;
+  NrOcorrCidadeNome := 0;
 
   FormatoItemListaServico := filsNaoSeAplica;
   NrOcorrRespRetencao := -1;
@@ -158,6 +161,23 @@ begin
                     NFSe.Servico.ItemServico[Item].DadosDeducao.ValorADeduzir));
 end;
 
+function TNFSeW_Elotech203.GerarEnderecoTomador: TACBrXmlNode;
+var
+  lNrOcorrCodigoPaisTomador: Integer;
+begin
+  lNrOcorrCodigoPaisTomador := NrOcorrCodigoPaisTomador;
+  try
+    if NFSe.Servico.ExigibilidadeISS = exiExportacao then
+      NrOcorrCodigoPaisTomador := 1
+    else
+      NrOcorrCodigoPaisTomador := lNrOcorrCodigoPaisTomador;
+
+    Result := inherited GerarEnderecoTomador;
+  finally
+    NrOcorrCodigoPaisTomador := lNrOcorrCodigoPaisTomador;
+  end;
+end;
+
 function TNFSeW_Elotech203.GerarItemServico: TACBrXmlNodeArray;
 var
   i: integer;
@@ -218,6 +238,13 @@ begin
       Result.AppendChild(nodeArray[i]);
     end;
   end;
+end;
+
+function TNFSeW_Elotech203.GerarServico: TACBrXmlNode;
+begin
+  Result := inherited GerarServico;
+
+  Result.AppendChild(GerarXMLIBSCBSNFSe);
 end;
 
 function TNFSeW_Elotech203.GerarValores: TACBrXmlNode;

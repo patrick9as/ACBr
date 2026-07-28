@@ -10,10 +10,9 @@ object frmACBrNFe: TfrmACBrNFe
   Font.Height = -11
   Font.Name = 'Tahoma'
   Font.Style = []
-  OldCreateOrder = True
   Position = poScreenCenter
   OnCreate = FormCreate
-  PixelsPerInch = 96
+  OnDestroy = FormDestroy
   TextHeight = 13
   object pnlMenus: TPanel
     Left = 0
@@ -1973,6 +1972,15 @@ object frmACBrNFe: TfrmACBrNFe
                   TabOrder = 1
                   OnClick = btnDestItemConsumoPessoalClick
                 end
+                object btnSolicApropriacaoCredPres: TButton
+                  Left = 190
+                  Top = 8
+                  Width = 177
+                  Height = 25
+                  Caption = 'Solic. Apropria. Cr'#233'd. Presumido'
+                  TabOrder = 2
+                  OnClick = btnSolicApropriacaoCredPresClick
+                end
               end
               object tsEmitente: TTabSheet
                 Caption = 'Emitente'
@@ -2028,7 +2036,7 @@ object frmACBrNFe: TfrmACBrNFe
                 ImageIndex = 2
                 object btnAceiteDebApuracaoNotaCredito: TButton
                   Left = 186
-                  Top = 40
+                  Top = 8
                   Width = 177
                   Height = 25
                   Caption = 'Aceite D'#233'b. Apur. Nota Cr'#233'dito'
@@ -2037,21 +2045,12 @@ object frmACBrNFe: TfrmACBrNFe
                 end
                 object btnImobilizacaoItem: TButton
                   Left = 186
-                  Top = 72
+                  Top = 40
                   Width = 177
                   Height = 25
                   Caption = 'Imobiliza'#231#227'o de Item'
                   TabOrder = 1
                   OnClick = btnImobilizacaoItemClick
-                end
-                object btnSolicApropriacaoCredPres: TButton
-                  Left = 186
-                  Top = 8
-                  Width = 177
-                  Height = 25
-                  Caption = 'Solic. Apropria. Cr'#233'd. Presumido'
-                  TabOrder = 2
-                  OnClick = btnSolicApropriacaoCredPresClick
                 end
                 object btnSolicitacaoApropCredCombustivel: TButton
                   Left = 5
@@ -2059,7 +2058,7 @@ object frmACBrNFe: TfrmACBrNFe
                   Width = 175
                   Height = 25
                   Caption = 'Solicit. Aprop. Cr'#233'd. Combust'#237'vel'
-                  TabOrder = 3
+                  TabOrder = 2
                   OnClick = btnSolicitacaoApropCredCombustivelClick
                 end
                 object btnSolicitacaoAproCredBensServAdiq: TButton
@@ -2068,7 +2067,7 @@ object frmACBrNFe: TfrmACBrNFe
                   Width = 175
                   Height = 25
                   Caption = 'Solicita'#231#227'o Aprop. Cred. Bens Adiq'
-                  TabOrder = 4
+                  TabOrder = 3
                   OnClick = btnSolicitacaoAproCredBensServAdiqClick
                 end
                 object btnPerecPerdaContrAdiqu: TButton
@@ -2077,7 +2076,7 @@ object frmACBrNFe: TfrmACBrNFe
                   Width = 175
                   Height = 25
                   Caption = 'Perec. Transp. Contratado Adiq.'
-                  TabOrder = 5
+                  TabOrder = 4
                   OnClick = btnPerecPerdaContrAdiquClick
                 end
               end

@@ -53,6 +53,7 @@ type
     function ObtemCodigoMoraJuros(const ACBrTitulo: TACBrTitulo): String;
     function ConverterJurosDiario(const ACBrTitulo: TACBrTitulo): Double;
     function ConverterMultaPercentual(const ACBrTitulo: TACBrTitulo): Double;
+    function ConverterMultaValor(const ACBrTitulo: TACBrTitulo): Double;
   protected
     function GetLocalPagamento: String; override;
   public
@@ -86,8 +87,8 @@ type
     function CompOcorrenciaOutrosDadosToDescricao(const CompOcorrencia: TACBrComplementoOcorrenciaOutrosDados): String; override;
     function CompOcorrenciaOutrosDadosToCodigo(const CompOcorrencia: TACBrComplementoOcorrenciaOutrosDados): String; override;
 
-
     function CodOcorrenciaToTipoRemessa(const CodOcorrencia:Integer): TACBrTipoOcorrencia; override;
+    function DefineTipoMulta(const ATitulo: TACBrTitulo): String;
   end;
 
 implementation
@@ -109,7 +110,7 @@ begin
    fpTamanhoAgencia        := 4;
    fpTamanhoConta          := 5;
    fpTamanhoCarteira       := 1;
-   fpCodigosMoraAceitos    := 'AB0123';
+   fpCodigosMoraAceitos    := 'ABC0123';
    fpCodigosGeracaoAceitos := '023456789';
    fpLayoutVersaoArquivo   := 81;
    fpLayoutVersaoLote      := 40;
@@ -225,7 +226,7 @@ begin
                '01'                                   + // Código do Tipo de Serviço
                PadRight( 'COBRANCA', 15 )             + // Descrição do tipo de serviço
                PadLeft( CodigoCedente, 5, '0')        + // Codigo da Empresa no Banco
-               PadLeft( OnlyNumber(CNPJCPF), 14, '0') + // CNPJ do Cedente
+               PadLeft( OnlyCPFCNPJAlphaNum(CNPJCPF), 14, '0') + // CNPJ do Cedente
                Space(31)                              + // Fillers - Branco
                '748'                                  + // Número do banco
                PadRight('SICREDI', 15)                + // Código e Nome do Banco(237 - Bradesco)
@@ -257,7 +258,8 @@ begin
     else
     begin
       case CodigoMoraJuros of
-        cjTaxaMensal,cjTaxaDiaria: Result := 'B';
+        cjTaxaDiaria: Result := 'B';
+        cjTaxaMensal: Result := 'C';
       else
         Result := 'A';
       end;
@@ -278,6 +280,18 @@ begin
   end;
 end;
 
+function TACBrBancoSicredi.ConverterMultaValor(
+  const ACBrTitulo: TACBrTitulo): Double;
+begin
+  with ACBrTitulo do
+  begin
+    if MultaValorFixo then
+      Result := PercentualMulta
+    else
+      Result := ValorDocumento * (PercentualMulta / 100);
+  end;
+end;
+
 function TACBrBancoSicredi.ConverterMultaPercentual(
   const ACBrTitulo: TACBrTitulo): Double;
 begin
@@ -294,16 +308,25 @@ begin
 end;
 
 
+function TACBrBancoSicredi.DefineTipoMulta(const ATitulo: TACBrTitulo): String;
+begin
+  Result := 'B';
+  if ATitulo.PercentualMulta > 0 then
+    if ATitulo.MultaValorFixo then
+      Result := 'A'
+    else
+      Result := 'B';
+end;
 
 procedure TACBrBancoSicredi.GerarRegistroTransacao400(ACBrTitulo :TACBrTitulo; aRemessa: TStringList);
 var
   wNossoNumeroCompleto, CodProtesto, DiasProtesto, CodNegativacao, DiasNegativacao: String;
-  TipoSacado, AceiteStr, wLinha, Ocorrencia, TpDesconto, CompOcorrenciaOutrosDados : String;
+  TipoSacado, AceiteStr, wLinha, Ocorrencia, TpDesconto, CompOcorrenciaOutrosDados, LTipoMulta : String;
   TipoBoleto, wModalidade: Char;
   TextoRegInfo: String;
   ANumeroDocumento: String;
   LHibrido : string;
-  LValorMoraJuros, LPercentualMulta : Double;
+  LValorMoraJuros, LPercentualMulta, LValorMulta : Double;
 begin
 
    with ACBrTitulo do
@@ -365,7 +388,7 @@ begin
       end;
 
       {Pegando Tipo de Sacado}
-      if Length(OnlyNumber(Sacado.CNPJCPF)) > 11 then
+      if Length(OnlyCPFCNPJAlphaNum(Sacado.CNPJCPF)) > 11 then
          TipoSacado:= '2'
       else
          TipoSacado:= '1';
@@ -405,22 +428,23 @@ begin
       if StrToIntDef(ACBrBoleto.Cedente.Modalidade,1) = 1 then
          wModalidade := 'A'
       else
-         wModalidade := 'C'; 
-
-      //if (CodigoMora <> 'A') and (CodigoMora <> 'B') then
-      //  CodigoMora := 'A';
+         wModalidade := 'C';
 
       CodigoMora := ObtemCodigoMoraJuros(ACBrTitulo);
 
       { Converte valor em moeda para valor diário, pois o arquivo só permite juros em R$/% diário }
       LValorMoraJuros := ConverterJurosDiario(ACBrTitulo);
 
-      { Converte valor em moeda para %, pois o arquivo só permite multa em %}
+      { Converte valor em moeda para %}
       LPercentualMulta := ConverterMultaPercentual(ACBrTitulo);
+      { Converte % em moeda}
+      LValorMulta := ConverterMultaValor(ACBrTitulo);
 
-     TpDesconto := TipoDescontoToString(TipoDesconto);
+      TpDesconto := TipoDescontoToString(TipoDesconto);
 
-     LHibrido := IfThen(NaoEstaVazio(ACBrBoleto.Cedente.PIX.Chave),'H',' ');
+      LTipoMulta := DefineTipoMulta(ACBrTitulo);
+
+      LHibrido := IfThen(NaoEstaVazio(ACBrBoleto.Cedente.PIX.Chave),'H',' ');
 
       with ACBrBoleto do
       begin
@@ -433,8 +457,11 @@ begin
                   Space(10)                                                             +  // 007 a 016 - Filler - Brancos
                   'A'                                                                   +  // 017 a 017 - Tipo de moeda = "A" Real
                   TpDesconto                                                            +  // 018 a 018 - Tipo de desconto: "A" Valor "B" percentual
-                  trim(CodigoMora)                                                      +  // 019 a 019 - Tipo de juro: "A" Valor "B" percentual
-                  Space(28)                                                             +  // 020 a 047 - Filler - Brancos
+                  trim(CodigoMora)                                                      +  // 019 a 019 - Tipo de juro: "A" Valor "B" percentual diário "C" percentual mensal
+                  LTipoMulta                                                            +  // 020 a 020 - Tipo de Multa : "A" Valor "B" percentual
+                  FormatDateTime('yyyymmdd', DataMoraJuros)                             +  // 021 a 028 - Data Inicio Cobrança dos Juros. Padrão: "Vencimento + 1", se "Vecinmento + 2", boleto sem QR CODE.
+                  FormatDateTime('yyyymmdd', DataMulta)                                 +  // 029 a 036 - Data Inicio Cobrança da Multa. Padrão: "Vencimento + 1", se "Vecinmento + 2", boleto sem QR CODE.
+                  Space(11)                                                             +  // 037 a 047 - Filler - Brancos
                   PadLeft(wNossoNumeroCompleto,9,'0');                                     // 048 a 056 - Nosso número sem edição YYXNNNNND - YY=Ano, X-Emissao, NNNNN-Sequência, D-Dígito
 
          if wModalidade = 'A' then
@@ -464,8 +491,8 @@ begin
          wLinha:= wLinha +
                   Space(4)                                                              +  // 079 a 082 - Filler - Brancos
                   IntToStrZero(round(ValorDescontoAntDia * 100), 10)                    +  // 083 a 092 - Valor de desconto por dia de antecipação
-                  IntToStrZero( round( LPercentualMulta * 100 ), 4)                      +  // 093 a 096 - % multa por pagamento em atraso
-                  Space(12)                                                             +  // 097 a 108 - Filler - Brancos
+                  IntToStrZero(round(LPercentualMulta * 100 ), 4)                       +  // 093 a 096 - % multa por pagamento em atraso
+                  IntToStrZero(round(LValorMulta * 100), 12)                            +  // 097 a 108 - valor multa por pagamento em atraso
                   Ocorrencia                                                            +  // 109 a 110 - Instrução = "01" Cadastro de título ... ---Anderson
                   ANumeroDocumento                                                      +  // 111 a 120 - Seu número
                   FormatDateTime( 'ddmmyy', Vencimento)                                 +  // 121 a 126 - Data de vencimento
@@ -506,7 +533,7 @@ begin
          wLinha:= wLinha +
                   TipoSacado                                                            +  // 219 a 219 - Tipo de pessoa do sacado: PF ou PJ = "1" Pessoa Física "2" Pessoa Jurídica
                   IfThen(wModalidade = 'A', '0', ' ')                                   +  // 220 a 220 - Filler - (Cob. Registrada = '0', Cob. Sem Registro = ' ')
-                  PadLeft(OnlyNumber(Sacado.CNPJCPF),14,'0')                            +  // 221 a 234 - CIC/CGC do sacado
+                  PadLeft(OnlyCPFCNPJAlphaNum(Sacado.CNPJCPF),14,'0')                            +  // 221 a 234 - CIC/CGC do sacado
                   PadRight( TiraAcentos(Sacado.NomeSacado), 40, ' ');                                   // 235 a 274 - Nome do sacado
 
          if wModalidade = 'A' then
@@ -520,7 +547,7 @@ begin
                      PadRight( OnlyNumber(Sacado.CEP), 8 )                              +  // 327 a 334 - CEP do sacado
                      PadRight('', 5, '0')                                               +  // 335 a 339 - Código do sacado junto ao cliente (zeros quando inexistente)
                      ifthen(NaoEstaVazio(Sacado.SacadoAvalista.CNPJCPF),
-                          PadLeft(OnlyNumber(Sacado.SacadoAvalista.CNPJCPF), 14, '0'),
+                          PadLeft(OnlyCPFCNPJAlphaNum(Sacado.SacadoAvalista.CNPJCPF), 14, '0'),
                           Space(14))                                                     +  // 340 a 353 - CIC/CGC do sacador avalista
                      PadRight(TiraAcentos(Sacado.Avalista), 41, ' ')                        // 354 a 394 - Nome do sacador avalista ---Anderson
          else
@@ -655,7 +682,7 @@ begin
                     PadLeft(wNossoNumeroCompleto,15,' ')                           + // 002 a 016 - Nosso número Sicredi
                     ANumeroDocumento                                               + // 017 a 026 - Seu número
                     PadRight('', 5, '0')                                           + // 027 a 031 - Código do pagador junto ao cliente
-                    PadLeft(OnlyNumber(Sacado.SacadoAvalista.CNPJCPF), 14, '0')    + // 032 a 045 - CPF/CNPJ do Sacador Avalista ( Obrigatório )
+                    PadLeft(OnlyCPFCNPJAlphaNum(Sacado.SacadoAvalista.CNPJCPF), 14, '0')    + // 032 a 045 - CPF/CNPJ do Sacador Avalista ( Obrigatório )
                     PadRight( TiraAcentos( Sacado.SacadoAvalista.NomeAvalista
                                           ), 41, ' ')                              + // 046 a 086 - Nome do Sacador Avalista ( Obrigatório )
                     PadRight( TiraAcentos( Sacado.SacadoAvalista.Logradouro  + ',' +
@@ -676,8 +703,8 @@ begin
           wLinha := '7'                                                            + // 001 a 001 - Identificação do registro detalhe (7)
                     PadLeft(wNossoNumeroCompleto, 15, ' ')                         + // 002 a 016 - Nosso número Sicredi
                     ANumeroDocumento                                               + // 017 a 026 - Seu número
-                    PadLeft(OnlyNumber(Sacado.CNPJCPF), 14, '0')                   + // 027 a 040 - CPF/CNPJ do pagador
-                    PadLeft(OnlyNumber(Sacado.SacadoAvalista.CNPJCPF), 14, '0')    + // 041 a 054 - CPF/CNPJ do Sacador Avalista
+                    PadLeft(OnlyCPFCNPJAlphaNum(Sacado.CNPJCPF), 14, '0')                   + // 027 a 040 - CPF/CNPJ do pagador
+                    PadLeft(OnlyCPFCNPJAlphaNum(Sacado.SacadoAvalista.CNPJCPF), 14, '0')    + // 041 a 054 - CPF/CNPJ do Sacador Avalista
                     IfThen(DataDesconto2 < EncodeDate(2000, 01, 01), '000000',
                          FormatDateTime('ddmmyy', DataDesconto2))                  + // 055 a 060 - Data limite para desconto 2
                     IntToStrZero( Round( ValorDesconto2 * 100 ), 13)               + // 061 a 073 - Valor do desconto 2
@@ -1896,7 +1923,7 @@ begin
               '0'                                                           + // 008 a 008 - Tipo de registro = "0" HEADER ARQUIVO
               Space(9)                                                      + // 009 a 017 - Uso exclusivo FEBRABAN/CNAB
               TipoInsc                                                      + // 018 a 018 - Tipo de inscrição da empresa = "1" Pessoa Física "2" Pessoa Jurídica
-              PadLeft(OnlyNumber(CNPJCPF), 14, '0')                         + // 019 a 032 - Número de inscrição da empresa
+              PadLeft(OnlyCPFCNPJAlphaNum(CNPJCPF), 14, '0')                         + // 019 a 032 - Número de inscrição da empresa
               Space(20)                                                     + // 033 a 052 - Código do convênio no banco (O SICREDI não valida este campo; cfe Manual Agosto 2010 pág. 35)
               PadLeft(OnlyNumber(Agencia), 5, '0')                          + // 053 a 057 - Agência mantenedora da conta
               Space(1)                                                      + // 058 a 058 - Dígito verificador da agência
@@ -1927,7 +1954,7 @@ begin
               PadLeft(IntToStr(fpLayoutVersaoLote), 3, '0')                 + // 014 a 016 - Nº da versão do leiaute do lote = "040"
               Space(1)                                                      + // 017 a 017 - Uso exclusivo FEBRABAN/CNAB
               TipoInsc                                                      + // 018 a 018 - Tipo de inscrição da empresa = "1" Pessoa Física "2" Pessoa Jurídica
-              PadLeft(OnlyNumber(CNPJCPF), 15, '0')                         + // 019 a 033 - Número de inscrição da empresa
+              PadLeft(OnlyCPFCNPJAlphaNum(CNPJCPF), 15, '0')                         + // 019 a 033 - Número de inscrição da empresa
               Space(20)                                                     + // 034 a 053 - Código do convênio no banco (O SICREDI não valida este campo; cfe Manual Agosto 2010 pág. 35)
               PadLeft(OnlyNumber(Agencia), 5, '0')                          + // 054 a 058 - Agência mantenedora da conta
               Space(1)                                                      + // 059 a 059 - Dígito verificador da agência
@@ -2160,8 +2187,8 @@ begin
              Ocorrencia                                                     + // 016 a 017 - Código de movimento de remessa
              TipoSacado                                                     + // 018 a 018 - Tipo de inscrição
              ifthen(NaoEstaVazio(Sacado.CNPJCPF),
-                  PadLeft(OnlyNumber(Sacado.CNPJCPF), 15, '0'),
-                  Space(15))                                                + // 019 a 033 - Número de inscrição
+                  PadLeft(OnlyCPFCNPJAlphaNum(Sacado.CNPJCPF), 15, '0'),
+                  Space(15))                                                               + // 019 a 033 - Número de inscrição
              PadRight(TiraAcentos(Sacado.NomeSacado), 40)                   + // 034 a 073 - Nome
              EndSacado                                                      + // 074 a 113 - Endereço
              PadRight(TiraAcentos(Sacado.Bairro), 15)                       + // 114 a 128 - Bairro
@@ -2171,7 +2198,7 @@ begin
              PadLeft(Sacado.UF, 2)                                          + // 152 a 153 - Unidade da Federação
              TipoAvalista                                                   + // 154 a 154 - Tipo de inscrição
              ifthen(NaoEstaVazio(Sacado.SacadoAvalista.CNPJCPF),
-                  PadLeft(OnlyNumber(Sacado.SacadoAvalista.CNPJCPF), 15, '0'),
+                  PadLeft(OnlyCPFCNPJAlphaNum(Sacado.SacadoAvalista.CNPJCPF), 15, '0'),
                   Space(15))                                                + // 155 a 169 - Número de inscrição
              PadRight(TiraAcentos(Sacado.SacadoAvalista.NomeAvalista),40,' ')            + // 170 a 209 - Nome do sacador/avalista
              PadRight('', 3, '0')                                           + // 210 a 212 - Cód. bco corresp. na compensação

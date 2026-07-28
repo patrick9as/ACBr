@@ -91,6 +91,7 @@ type
    FWSFraseSecr: String;
    FWSChaveAcesso: String;
    FWSChaveAutoriz: String;
+   {$IFDEF ACBR_API}FWSToken: String;{$ENDIF}
    FDadosEmitente: TDadosEmitente;
 
  public
@@ -108,6 +109,9 @@ type
    property WSFraseSecr: String       read FWSFraseSecr       write FWSFraseSecr;
    property WSChaveAcesso: String     read FWSChaveAcesso     write FWSChaveAcesso;
    property WSChaveAutoriz: String    read FWSChaveAutoriz    write FWSChaveAutoriz;
+   {$IFDEF ACBR_API}
+   property WSToken: String           read FWSToken           write FWSToken;
+   {$ENDIF}
 
    property DadosEmitente: TDadosEmitente read FDadosEmitente write FDadosEmitente;
  end;
@@ -227,6 +231,7 @@ type
     procedure GravarIni(const AIni: TCustomIniFile); override;
     procedure LerIni(const AIni: TCustomIniFile); override;
     procedure LerParamsMunicipio;
+    procedure SetAPIPropria(aValor: Boolean);
 
   published
     property CodigoMunicipio: Integer read FCodigoMunicipio write SetCodigoMunicipio;
@@ -545,7 +550,7 @@ end;
 
 procedure TGeralConfNFSe.LerParamsMunicipio;
 var
-  Ok: Boolean;
+  Ok, lIgnoraParamsProvedor: Boolean;
   CodIBGE, aValor, lVersaoNoProvedor, lVersaoNoMunicipio: string;
   ACBrNFSeXLocal: TACBrNFSeX;
 begin
@@ -596,26 +601,21 @@ begin
       FVersao := StrToVersaoNFSe(Ok, FPIniParams.ReadString(CodIBGE, 'Versao', '1.00'));
   end;
 
-//  if aValor <> '' then
-//    FVersao := StrToVersaoNFSe(Ok, aValor)
-//  else
-//  begin
-//    aValor := FPIniParams.ReadString(CodIBGE, 'Versao', '');
-//
-//    if aValor <> '***' then
-//      FVersao := StrToVersaoNFSe(Ok, FPIniParams.ReadString(CodIBGE, 'Versao', '1.00'));
-//  end;
-
   {
     Verifica se na seção do município consta o Params,
     caso contrario usa o Params da seção do Provedor.
   }
   aValor := FPIniParams.ReadString(CodIBGE, 'Params', '');
 
-  if aValor = '' then
-    FAPIPropria := (Pos('APIPropria:', FPIniParams.ReadString(FxProvedor, 'Params', '')) > 0)
-  else
-    FAPIPropria := (Pos('APIPropria:', aValor) > 0);
+  //Se o Params tiver um * na seção do município eu ignoro a seção do provedor e o Params vai ser vazio do contrário concateno ambos
+  lIgnoraParamsProvedor := (POS('*:', aValor) > 0) or (POS('*|', aValor) > 0) or (POS('*', aValor) > 0) or (aValor = '*');
+  if not (lIgnoraParamsProvedor) then
+    aValor := aValor + FPIniParams.ReadString(FxProvedor, 'Params', '');
+
+  FAPIPropria := (Pos('APIPropria:', aValor) > 0);
+
+  if not (FVersao in [ve100, ve101]) and FAPIPropria then
+    FAPIPropria := False;
 
   {
     Verifica se o componente esta configurado com o layout PadraoNacionalv1 ou
@@ -676,6 +676,11 @@ begin
   //Deve ser a última configuração para que não sobrescreva configurações importantes.
   //Daniel Morais, Panda, Antonio Carlos Junior, Italo Giurizzato Junior, Diego Folieni
   CodigoMunicipio := DeGeralConfNFSe.CodigoMunicipio;
+end;
+
+procedure TGeralConfNFSe.SetAPIPropria(aValor: Boolean);
+begin
+  FAPIPropria := aValor;
 end;
 
 procedure TGeralConfNFSe.SetCodigoMunicipio(const Value: Integer);

@@ -154,12 +154,7 @@ begin
 
         ItemServico[i].TribMunPrestador := FpAOwner.StrToSimNao(Ok, ObterConteudo(ANodes[i].Childrens.FindAnyNs('tributa_municipio_prestador'), tcStr));
         ItemServico[i].CodMunPrestacao := CodTOMToCodIBGE(ObterConteudo(ANodes[i].Childrens.FindAnyNs('codigo_local_prestacao_servico'), tcStr));
-
-        aValor := ObterConteudo(ANodes[i].Childrens.FindAnyNs('codigo_item_lista_servico'), tcStr);
-
-        ItemServico[i].ItemListaServico := PadLeft(aValor, 4, '0');
-//        ItemServico[i].ItemListaServico := NormatizarItemListaServico(ItemServico[i].ItemListaServico);
-
+        ItemServico[i].ItemListaServico := ObterConteudo(ANodes[i].Childrens.FindAnyNs('codigo_item_lista_servico'), tcStr);
         ItemServico[i].xItemListaServico := ItemListaServicoDescricao(ItemServico[i].ItemListaServico);
 
         aValor := ObterConteudo(ANodes[i].Childrens.FindAnyNs('unidade_codigo'), tcStr);
@@ -182,6 +177,12 @@ begin
         ItemServico[i].BaseCalculo := ObterConteudo(ANodes[i].Childrens.FindAnyNs('valor_tributavel'), tcDe2);
         ItemServico[i].ValorIssRetido := ObterConteudo(ANodes[i].Childrens.FindAnyNs('valor_issrf'), tcDe2);
         ItemServico[i].DescontoIncondicionado := ObterConteudo(ANodes[i].Childrens.FindAnyNs('ValorDescontoIncondicional'), tcDe2);
+
+        if ItemServico[i].Quantidade = 0 then
+          ItemServico[i].Quantidade := 1;
+
+        if ItemServico[i].ValorUnitario = 0 then
+          ItemServico[i].ValorUnitario := ItemServico[i].ValorTributavel;
 
         if ItemServico[i].ValorTotal = 0 then
           ItemServico[i].ValorTotal := ItemServico[i].Quantidade * ItemServico[i].ValorUnitario;
@@ -507,7 +508,7 @@ begin
   else
     Result := LerXmlRps(XmlNode);
 
-  VerificarSeConteudoEhLista(NFSe.Servico.Discriminacao);
+//  VerificarSeConteudoEhLista(NFSe.Servico.Discriminacao);
 
   FreeAndNil(FDocument);
 end;

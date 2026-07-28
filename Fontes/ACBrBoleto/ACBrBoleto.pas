@@ -527,7 +527,8 @@ type
     toRetornoProtestoSustadoJudicialmente,
     toRetornoConfInstrucaoSustarProtesto,
     toRetornoConfInstrucaoAlteracaoDiasBaixaAutomatica,
-    toRetornoAlteracaoQuantidadeParcela
+    toRetornoAlteracaoQuantidadeParcela,
+    toRetornoConfirmacaoInstrucaoAnuencia
   );
 
   //Complemento de instrução para alterar outros dados
@@ -1816,7 +1817,7 @@ const
     'Remessa Excluir negativação e manter em carteira',
     'Remessa Sustar Protesto e baixar',
     'Remessa Sustar Protesto e manter em carteira',
-    'Remessa Resusa Alegação do Sacado',
+    'Remessa Recusa Alegação do Sacado',
     'Remessa Protestar Automaticamente',
     'Remessa Alteração de Status Desconto',
     'Remessa Protestar Urgente',
@@ -2088,7 +2089,8 @@ const
     'Retorno Protesto Sustado Judicialmente',
     'Retorno Confirmação Instrucao Sustar Protesto',
     'Retorno Confirmação Instrucao Alteracao Dias Baixa Automatica',
-    'Retorno Alteracao Quantidade Parcela'
+    'Retorno Alteracao Quantidade Parcela',
+    'Retorno Confirmação Instrução Anuência'
 );
 
 
@@ -2557,7 +2559,7 @@ begin
    if fCNPJCPF = AValue then
      Exit;
 
-   ADocto := OnlyNumber(AValue);
+   ADocto := OnlyCPFCNPJAlphaNum(AValue);
    if EstaVazio(ADocto) then
    begin
       fCNPJCPF:= ADocto;
@@ -3715,10 +3717,13 @@ var
   LBoletoWSClass : TBoletoWSClass;
 begin
   LBoletoWS      := TBoletoWS.Create(Self);
-  LBoletoWSClass := TBoletoWSClass.Create(LBoletoWS);
-
   try
-    Result := LBoletoWS.NovoTokenAutenticacao(AToken, AValidadeToken);
+    LBoletoWSClass := TBoletoWSClass.Create(LBoletoWS);
+    try
+       Result := LBoletoWS.NovoTokenAutenticacao(AToken, AValidadeToken);
+    finally
+       LBoletoWSClass.Free;
+    end;
   finally
     LBoletoWS.Free;
   end;
@@ -4320,7 +4325,7 @@ begin
             NossoNumeroCorrespondente  := IniBoletos.ReadString(Sessao,'NossoNumeroCorrespondente','');            
             ValorDocumento      := IniBoletos.ReadFloat(Sessao,'ValorDocumento',ValorDocumento);
             Sacado.NomeSacado   := IniBoletos.ReadString(Sessao,'Sacado.NomeSacado','');
-            Sacado.CNPJCPF      := OnlyNumber(IniBoletos.ReadString(Sessao,'Sacado.CNPJCPF',''));
+            Sacado.CNPJCPF      := OnlyCPFCNPJAlphaNum(IniBoletos.ReadString(Sessao,'Sacado.CNPJCPF',''));
             Sacado.Logradouro   := IniBoletos.ReadString(Sessao,'Sacado.Logradouro','');
             Sacado.Numero       := IniBoletos.ReadString(Sessao,'Sacado.Numero','');
             Sacado.Bairro       := IniBoletos.ReadString(Sessao,'Sacado.Bairro','');
@@ -4336,6 +4341,8 @@ begin
             Instrucao1          := IniBoletos.ReadString(Sessao,'Instrucao1',Instrucao1);
             Instrucao2          := IniBoletos.ReadString(Sessao,'Instrucao2',Instrucao2);
             Instrucao3          := IniBoletos.ReadString(Sessao,'Instrucao3',Instrucao3);
+            Instrucao4          := IniBoletos.ReadString(Sessao,'Instrucao4',Instrucao4);
+            Instrucao5          := IniBoletos.ReadString(Sessao,'Instrucao5',Instrucao5);
             TotalParcelas       := IniBoletos.ReadInteger(Sessao,'TotalParcelas',TotalParcelas);
             Parcela             := IniBoletos.ReadInteger(Sessao,'Parcela',Parcela);
             ValorAbatimento     := IniBoletos.ReadFloat(Sessao,'ValorAbatimento',ValorAbatimento);
@@ -5260,7 +5267,7 @@ begin
       '0'                                              + //8 - Tipo de registro - Registro header de arquivo
       PadRight('', 9, ' ')                             + //9 a 17 Uso exclusivo FEBRABAN/CNAB
       DefineTipoInscricao                              + //18 - Tipo de inscrição do cedente
-      PadLeft(OnlyNumber(CNPJCPF), 14, '0')            + //19 a 32 -Número de inscrição do cedente
+      PadLeft(OnlyCPFCNPJAlphaNum(CNPJCPF), 14, '0')            + //19 a 32 -Número de inscrição do cedente
       DefineCampoConvenio(20)                          + //33 a 52 - Código do convênio no banco-Alfa
       PadLeft(OnlyNumber(Agencia), 5, '0')             + //53 a 57 - Código da agência do cedente-Numero
       DefineCampoDigitoAgencia                         + //58 - Dígito da agência do cedente -Alfa
@@ -5291,7 +5298,7 @@ begin
       PadLeft(IntToStr(fpLayoutVersaoLote), 3, '0') + //14 a 16 - Número da versão do layout do lote
       ' '                                        + //17 - Uso exclusivo FEBRABAN/CNAB
       DefineTipoInscricao                        + //18 - Tipo de inscrição do cedente
-      PadLeft(OnlyNumber(CNPJCPF), 15, '0')      + //19 a 33 -Número de inscrição do cedente
+      PadLeft(OnlyCNPJorCPF(CNPJCPF), 15, '0')      + //19 a 33 -Número de inscrição do cedente
       DefineCampoConvenio(20)                    + //33 a 52 - Código do convênio no banco-Alfa
       Padleft(Agencia, 5, '0')                   + //54 a 58 - Agência Mantenedora da Conta
       DefineCampoDigitoAgencia                   + //59 - Dígito da agência do cedente
@@ -5899,7 +5906,7 @@ begin
     With ACBrBanco.ACBrBoleto do
     begin
       if NaoEstaVazio(ACNPJCPF) then
-        if (not LeCedenteRetorno) and (ACNPJCPF <> OnlyNumber(Cedente.CNPJCPF)) then
+        if (not LeCedenteRetorno) and (ACNPJCPF <> OnlyCPFCNPJAlphaNum(Cedente.CNPJCPF)) then
           raise EACBrBoleto.CreateFmt(ACBrStr('CNPJ\CPF: %s do arquivo não corresponde aos dados do Cedente!'), [ACNPJCPF]);
 
       if NaoEstaVazio(AContaCedente) then

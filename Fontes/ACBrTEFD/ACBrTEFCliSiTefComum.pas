@@ -369,6 +369,15 @@ begin
         136: BIN := LinStr;
         139: ValorEntradaCDC := Linha.Informacao.AsFloat;
         140: DataEntradaCDC := Linha.Informacao.AsDate;
+        146:
+        begin
+          ValorOriginal := Linha.Informacao.AsFloat;
+          if (ValorTotal = 0) then
+          begin
+            ValorTotal := ValorOriginal;
+            Conteudo.GravaInformacao(899, CTEF_RESP_VALOR_TRANSACAO, '0');
+          end;
+        end;
         156: Rede := LinStr;
         157: Estabelecimento := LinStr;
         158: CodigoRedeAutorizada := LinStr; 
@@ -446,10 +455,12 @@ begin
     end;
 
     QtdLinhasComprovante := max(ImagemComprovante1aVia.Count, ImagemComprovante2aVia.Count);
-    Confirmar := (QtdLinhasComprovante > 0) or
-                 (LeInformacao(899, CTEF_RESP_FUNCAO).AsInteger = CSITEF_OP_ConsultarTrasPendente);
+    Confirmar := (LeInformacao(899, CTEF_RESP_FUNCAO).AsInteger = CSITEF_OP_ConsultarTrasPendente) or
+                 ( (QtdLinhasComprovante > 0) and
+                   (LowerCase(LeInformacao(899, CTEF_RESP_CONFIRMAR).AsString) <> 'false') );
 
-    Sucesso := (NSU_TEF <> '') or Confirmar;
+
+    Sucesso := (NSU_TEF <> '') or Confirmar or (QtdLinhasComprovante > 0);
 
     // leitura de parcelas conforme nova documentação
     // 141 e 142 foram removidos em Setembro de 2014

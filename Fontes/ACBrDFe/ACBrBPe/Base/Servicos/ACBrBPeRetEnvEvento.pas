@@ -46,9 +46,6 @@ uses
   ACBrBase,
   ACBrXmlBase,
   ACBrDFe.Conversao,
-  pcnConversao,
-  pcnSignature,
-//  ACBrDFeComum.SignatureClass,
   ACBrXmlDocument,
   ACBrBPeEventoClass;
 
@@ -63,7 +60,7 @@ type
     FXmlRetorno: string;
     FInfEvento: TInfEvento;
     FidLote: Int64;
-    FtpAmb: TpcnTipoAmbiente;
+    FtpAmb: TACBrTipoAmbiente;
     FverAplic: string;
     FcOrgao: Integer;
     FcStat: Integer;
@@ -83,7 +80,7 @@ type
 
     property idLote: Int64 read FidLote write FidLote;
     property versao: string read Fversao write Fversao;
-    property tpAmb: TpcnTipoAmbiente read FtpAmb write FtpAmb;
+    property tpAmb: TACBrTipoAmbiente read FtpAmb write FtpAmb;
     property verAplic: string read FverAplic write FverAplic;
     property cOrgao: Integer read FcOrgao write FcOrgao;
     property cStat: Integer read FcStat write FcStat;
@@ -184,7 +181,7 @@ begin
 
   infEvento.Id := ObterConteudoTag(ANode.Attributes.Items['Id']);
   infEvento.cOrgao := ObterConteudoTag(ANode.Childrens.FindAnyNs('cOrgao'), tcInt);
-  infEvento.tpAmb := StrToTpAmb(ok, ObterConteudoTag(ANode.Childrens.FindAnyNs('tpAmb'), tcStr));
+  infEvento.tpAmb := StrToTipoAmbiente(ObterConteudoTag(ANode.Childrens.FindAnyNs('tpAmb'), tcStr));
   infEvento.CNPJ := ObterConteudoTagCNPJCPF(ANode);
   infEvento.chBPe := ObterConteudoTag(ANode.Childrens.FindAnyNs('chBPe'), tcStr);
   infEvento.dhEvento := ObterConteudoTag(ANode.Childrens.FindAnyNs('dhEvento'), tcDatHor);
@@ -231,7 +228,6 @@ end;
 
 procedure TRetEventoBPe.Ler_RetEvento(const ANode: TACBrXmlNode);
 var
-  ok: Boolean;
   aValor: string;
 begin
   if not Assigned(ANode) then Exit;
@@ -241,7 +237,7 @@ begin
 
   aValor := ObterConteudoTag(ANode.Childrens.FindAnyNs('tpAmb'), tcStr);
   if aValor <> '' then
-    tpAmb := StrToTpAmb(ok, aValor);
+    tpAmb := StrToTipoAmbiente(aValor);
 
   verAplic := ObterConteudoTag(ANode.Childrens.FindAnyNs('verAplic'), tcStr);
   cOrgao := ObterConteudoTag(ANode.Childrens.FindAnyNs('cOrgao'), tcInt);
