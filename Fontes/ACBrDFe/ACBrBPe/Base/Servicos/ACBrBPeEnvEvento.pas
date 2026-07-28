@@ -45,15 +45,13 @@ uses
   {$IFEND}
   ACBrDFeConsts,
   ACBrBase,
-  pcnConversao,
-  pcnSignature,
   ACBrXmlBase,
   ACBrDFe.Conversao,
-//  ACBrDFeComum.SignatureClass,
   ACBrBPeClass,
   ACBrBPeEventoClass,
   ACBrBPeConsts,
   ACBrXmlWriter,
+  ACBrDFe.RTC.Classes,
   ACBrXmlDocument;
 
 type
@@ -135,7 +133,7 @@ type
 
     function LerXML(const ACaminhoArquivo: string): Boolean;
     function LerXMLFromString(const AXML: string): Boolean;
-    function ObterNomeArquivo(tpEvento: TpcnTpEvento): string;
+    function ObterNomeArquivo(tpEvento: TACBrTipoEvento): string;
     function LerFromIni(const AIniString: string): Boolean;
 
     property idLote: Int64 read FidLote write FidLote;
@@ -154,6 +152,7 @@ uses
   ACBrUtil.Strings,
   ACBrUtil.FilesIO,
   ACBrUtil.DateTime,
+  ACBrUtil.XMLHTML,
   ACBrBPeRetEnvEvento,
   ACBrBPeConversao;
 
@@ -178,7 +177,7 @@ begin
   Result := TACBrXmlWriterOptions.Create();
 end;
 
-function TEventoBPe.ObterNomeArquivo(tpEvento: TpcnTpEvento): string;
+function TEventoBPe.ObterNomeArquivo(tpEvento: TACBrTipoEvento): string;
 begin
   case tpEvento of
     teCancelamento: Result := IntToStr(Self.idLote) + '-can-eve.xml';
@@ -215,7 +214,7 @@ var
 begin
   Evento[AIdx].InfEvento.id := 'ID'+
                                Evento[AIdx].InfEvento.TipoEvento +
-                               OnlyNumber(Evento[AIdx].InfEvento.chBPe) +
+                               RemoverLiteralChave(Evento[AIdx].InfEvento.chBPe) +
                                Format('%.2d', [Evento[AIdx].InfEvento.nSeqEvento]);
 
   Result := CreateElement('infEvento');
@@ -227,7 +226,7 @@ begin
   Result.AppendChild(AddNode(tcStr, 'P06', 'tpAmb', 1, 1, 1,
                    TipoAmbienteToStr(Evento[AIdx].InfEvento.tpAmb), DSC_TPAMB));
 
-  sDoc := OnlyNumber(Evento[AIdx].InfEvento.CNPJ);
+  sDoc := OnlyCPFCNPJAlphaNum(Evento[AIdx].InfEvento.CNPJ);
 
   if EstaVazio(sDoc) then
     sDoc := ExtrairCNPJCPFChaveAcesso(Evento[AIdx].InfEvento.chBPe);
@@ -457,15 +456,10 @@ end;
 
 function TEventoBPe.LerXML(const ACaminhoArquivo: string): Boolean;
 var
-  ArqEvento: TStringList;
+  LXML: string;
 begin
-  ArqEvento := TStringList.Create;
-  try
-    ArqEvento.LoadFromFile(ACaminhoArquivo);
-    Result := LerXMLFromString(ArqEvento.Text);
-  finally
-    ArqEvento.Free;
-  end;
+  LXML := CarregarArquivo(ACaminhoArquivo);
+  Result := LerXMLFromString(LXML);
 end;
 
 function TEventoBPe.LerXMLFromString(const AXML: string): Boolean;
@@ -474,7 +468,7 @@ var
 begin
   RetEventoBPe := TRetEventoBPe.Create;
   try
-    RetEventoBPe.XmlRetorno := AXML;
+    RetEventoBPe.XmlRetorno := RemoverUTF8Bom(AXML);
     Result := RetEventoBPe.LerXml;
 
     with FEvento.New do
@@ -618,7 +612,7 @@ begin
                                             IBSCBS.cClassTrib, DSC_CCLASSTRIB));
 
     Result.AppendChild(AddNode(tcStr, '#3', 'indDoacao', 1, 1, 0,
-              pcnConversao.TIndicadorExToStr(IBSCBS.indDoacao), DSC_INDDOACAO));
+                           TIndicadorExToStr(IBSCBS.indDoacao), DSC_INDDOACAO));
 
     if IBSCBS.gIBSCBS.vBC > 0 then
       Result.AppendChild(Gerar_IBSCBS_gIBSCBS(IBSCBS.gIBSCBS));

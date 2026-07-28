@@ -6,8 +6,7 @@
 { Direitos Autorais Reservados (c) 2024 Daniel Simoes de Almeida               }
 {                                                                              }
 { Colaboradores nesse arquivo:                                                 }
-{ - José Junior                                                                }
-{ - Antônio Júnior                                                             }
+{ - Elias Cesar                                                                }
 {                                                                              }
 {  Você pode obter a última versão desse arquivo na pagina do  Projeto ACBr    }
 { Componentes localizado em      http://www.sourceforge.net/projects/acbr      }
@@ -41,7 +40,8 @@ interface
 uses
   Classes, SysUtils, ACBrSocket, ACBrBase,
   ACBrUtil.Base, ACBrUtil.FilesIO,
-  ACBrSchemasPagamentosAPI;
+  ACBrSchemasPagamentosAPI, 
+  ACBrSchemasTransferenciasAPIBB;
 
 type
 
@@ -75,11 +75,21 @@ type
     fLoteGuiasCodigoBarrasConsultado: TACBrLoteGuiaCodBarrasRespostaConsulta;
     fLoteGuiasCodigoBarrasCriado: TACBrLoteGuiaCodBarrasResposta;
     fLoteGuiasCodigoBarrasSolicitado: TACBrLoteGuiasCodigoBarrasRequisicao;
+    fLoteTransferenciasConsultado: TACBrLoteTransferenciasRespostaConsulta;
+    fLoteTransferenciasCriado: TACBrLoteTransferenciasResposta;
+    fLoteTransferenciasSolicitado: TACBrLoteTransferenciasRequisicao;
+    fLoteTransferenciaPixConsultado: TACBrLoteTransferenciaPixResposta;
+    fLoteTransferenciaPixCriado: TACBrLoteTransferenciaPixResposta;
+    fLoteTransferenciaPixSolicitado: TACBrLoteTransferenciaPixRequisicao;
     fPagamentoBoletoConsultado: TACBrPagamentoEspecificoBoletoResposta;
     fPagamentoGPSConsultado: TACBrPagamentoEspecificoGPSResposta;
     fPagamentoGRUConsultado: TACBrPagamentoEspecificoGRUResposta;
     fPagamentoDARFConsultado: TACBrPagamentoEspecificoDARFResposta;
     fPagamentoGuiaCodigoBarrasConsultado: TACBrPagamentoEspecificoGuiaCodBarrasResposta;
+    fPagamentosCancelarResposta: TACBrPagamentosPagamentoCancelarRespostaLista;
+    fPagamentosCancelarSolicitado: TACBrPagamentosCancelarLotePagamentos;
+    fTransferenciaConsultada: TACBrPagamentoEspecificoTransferenciaResposta;
+    fTransferenciaPixConsultada: TACBrPagamentoEspecificoPixResposta;
     fRespostaErros: TACBrPagamentosAPIErros;
     function GetLoteBoletosConsultado: TACBrLoteBoletosResposta;
     function GetLoteBoletosCriado: TACBrLoteBoletosResposta;
@@ -96,11 +106,21 @@ type
     function GetLoteGuiasCodigoBarrasConsultado: TACBrLoteGuiaCodBarrasRespostaConsulta;
     function GetLoteGuiasCodigoBarrasCriado: TACBrLoteGuiaCodBarrasResposta;
     function GetLoteGuiasCodigoBarrasSolicitado: TACBrLoteGuiasCodigoBarrasRequisicao;
+    function GetLoteTransferenciasConsultado: TACBrLoteTransferenciasRespostaConsulta;
+    function GetLoteTransferenciasCriado: TACBrLoteTransferenciasResposta;
+    function GetLoteTransferenciasSolicitado: TACBrLoteTransferenciasRequisicao;
+    function GetLoteTransferenciaPixConsultado: TACBrLoteTransferenciaPixResposta;
+    function GetLoteTransferenciaPixCriado: TACBrLoteTransferenciaPixResposta;
+    function GetLoteTransferenciaPixSolicitado: TACBrLoteTransferenciaPixRequisicao;
     function GetPagamentoBoletoConsultado: TACBrPagamentoEspecificoBoletoResposta;
     function GetPagamentoGPSConsultado: TACBrPagamentoEspecificoGPSResposta;
     function GetPagamentoGRUConsultado: TACBrPagamentoEspecificoGRUResposta;
     function GetPagamentoDARFConsultado: TACBrPagamentoEspecificoDARFResposta;
     function GetPagamentoGuiaCodigoBarrasConsultado: TACBrPagamentoEspecificoGuiaCodBarrasResposta;
+    function GetPagamentosCancelarResposta: TACBrPagamentosPagamentoCancelarRespostaLista;
+    function GetPagamentosCancelarSolicitado: TACBrPagamentosCancelarLotePagamentos;
+    function GetTransferenciaConsultada: TACBrPagamentoEspecificoTransferenciaResposta;
+    function GetTransferenciaPixConsultada: TACBrPagamentoEspecificoPixResposta;
     function GetRespostaErros: TACBrPagamentosAPIErros;
   protected
     fpBanco: TACBrPagamentosAPIBancoClass;
@@ -132,6 +152,16 @@ type
     function GPSConsultarLotePagamentos(const aId: String): Boolean; virtual;
     function GPSConsultarPagamentoEspecifico(const aId: String): Boolean; virtual;
 
+    function TransferenciaSolicitarLote: Boolean; virtual;
+    function TransferenciaConsultarLote(const aId: String): Boolean; virtual;
+    function TransferenciaConsultar(const aId: String): Boolean; virtual;
+
+    function TransferenciaPixSolicitarLote: Boolean; virtual;
+    function TransferenciaPixConsultarLote(const aId: String): Boolean; virtual;
+    function TransferenciaPixConsultar(const aId: String): Boolean; virtual;
+
+    function PagamentosCancelar: Boolean; virtual;
+
     property LoteBoletosCriado: TACBrLoteBoletosResposta read GetLoteBoletosCriado write fLoteBoletosCriado;
     property LoteBoletosConsultado: TACBrLoteBoletosResposta read GetLoteBoletosConsultado write fLoteBoletosConsultado;
     property LoteBoletosSolicitado: TACBrLoteBoletosRequisicao read GetLoteBoletosSolicitado write fLoteBoletosSolicitado;
@@ -156,6 +186,19 @@ type
     property LoteGPSConsultado: TACBrLoteGPSRespostaConsulta read GetLoteGPSConsultado write fLoteGPSConsultado;
     property LoteGPSSolicitado: TACBrLoteGPSRequisicao read GetLoteGPSSolicitado write fLoteGPSSolicitado;
     property PagamentoGPSConsultado: TACBrPagamentoEspecificoGPSResposta read GetPagamentoGPSConsultado write fPagamentoGPSConsultado;
+
+    property LoteTransferenciasCriado: TACBrLoteTransferenciasResposta read GetLoteTransferenciasCriado write fLoteTransferenciasCriado;
+    property LoteTransferenciasConsultado: TACBrLoteTransferenciasRespostaConsulta read GetLoteTransferenciasConsultado write fLoteTransferenciasConsultado;
+    property LoteTransferenciasSolicitado: TACBrLoteTransferenciasRequisicao read GetLoteTransferenciasSolicitado write fLoteTransferenciasSolicitado;
+    property TransferenciaConsultada: TACBrPagamentoEspecificoTransferenciaResposta read GetTransferenciaConsultada write fTransferenciaConsultada;
+
+    property LoteTransferenciaPixCriado: TACBrLoteTransferenciaPixResposta read GetLoteTransferenciaPixCriado write fLoteTransferenciaPixCriado;
+    property LoteTransferenciaPixConsultado: TACBrLoteTransferenciaPixResposta read GetLoteTransferenciaPixConsultado write fLoteTransferenciaPixConsultado;
+    property LoteTransferenciaPixSolicitado: TACBrLoteTransferenciaPixRequisicao read GetLoteTransferenciaPixSolicitado write fLoteTransferenciaPixSolicitado;
+    property TransferenciaPixConsultada: TACBrPagamentoEspecificoPixResposta read GetTransferenciaPixConsultada write fTransferenciaPixConsultada;
+
+    property PagamentosCancelarSolicitado: TACBrPagamentosCancelarLotePagamentos read GetPagamentosCancelarSolicitado write fPagamentosCancelarSolicitado;
+    property PagamentosCancelarResposta: TACBrPagamentosPagamentoCancelarRespostaLista read GetPagamentosCancelarResposta write fPagamentosCancelarResposta;
 
     property RespostaErros: TACBrPagamentosAPIErros read GetRespostaErros write fRespostaErros;
   end;
@@ -322,6 +365,48 @@ begin
   Result := fLoteGuiasCodigoBarrasSolicitado;
 end;
 
+function TACBrPagamentosAPIClass.GetLoteTransferenciasConsultado: TACBrLoteTransferenciasRespostaConsulta;
+begin
+  if (not Assigned(fLoteTransferenciasConsultado)) then
+    fLoteTransferenciasConsultado := TACBrLoteTransferenciasRespostaConsulta.Create;
+  Result := fLoteTransferenciasConsultado;
+end;
+
+function TACBrPagamentosAPIClass.GetLoteTransferenciasCriado: TACBrLoteTransferenciasResposta;
+begin
+  if (not Assigned(fLoteTransferenciasCriado)) then
+    fLoteTransferenciasCriado := TACBrLoteTransferenciasResposta.Create;
+  Result := fLoteTransferenciasCriado;
+end;
+
+function TACBrPagamentosAPIClass.GetLoteTransferenciasSolicitado: TACBrLoteTransferenciasRequisicao;
+begin
+  if (not Assigned(fLoteTransferenciasSolicitado)) then
+    fLoteTransferenciasSolicitado := TACBrLoteTransferenciasRequisicao.Create;
+  Result := fLoteTransferenciasSolicitado;
+end;
+
+function TACBrPagamentosAPIClass.GetLoteTransferenciaPixConsultado: TACBrLoteTransferenciaPixResposta;
+begin
+  if (not Assigned(fLoteTransferenciaPixConsultado)) then
+    fLoteTransferenciaPixConsultado := TACBrLoteTransferenciaPixResposta.Create;
+  Result := fLoteTransferenciaPixConsultado;
+end;
+
+function TACBrPagamentosAPIClass.GetLoteTransferenciaPixCriado: TACBrLoteTransferenciaPixResposta;
+begin
+  if (not Assigned(fLoteTransferenciaPixCriado)) then
+    fLoteTransferenciaPixCriado := TACBrLoteTransferenciaPixResposta.Create;
+  Result := fLoteTransferenciaPixCriado;
+end;
+
+function TACBrPagamentosAPIClass.GetLoteTransferenciaPixSolicitado: TACBrLoteTransferenciaPixRequisicao;
+begin
+  if (not Assigned(fLoteTransferenciaPixSolicitado)) then
+    fLoteTransferenciaPixSolicitado := TACBrLoteTransferenciaPixRequisicao.Create;
+  Result := fLoteTransferenciaPixSolicitado;
+end;
+
 function TACBrPagamentosAPIClass.GetPagamentoBoletoConsultado: TACBrPagamentoEspecificoBoletoResposta;
 begin
   if (not Assigned(fPagamentoBoletoConsultado)) then
@@ -355,6 +440,34 @@ begin
   if (not Assigned(fPagamentoGuiaCodigoBarrasConsultado)) then
     fPagamentoGuiaCodigoBarrasConsultado := TACBrPagamentoEspecificoGuiaCodBarrasResposta.Create;
   Result := fPagamentoGuiaCodigoBarrasConsultado;
+end;
+
+function TACBrPagamentosAPIClass.GetPagamentosCancelarResposta: TACBrPagamentosPagamentoCancelarRespostaLista;
+begin
+  if (not Assigned(fPagamentosCancelarResposta)) then
+    fPagamentosCancelarResposta := TACBrPagamentosPagamentoCancelarRespostaLista.Create('pagamentos');
+  Result := fPagamentosCancelarResposta;
+end;
+
+function TACBrPagamentosAPIClass.GetPagamentosCancelarSolicitado: TACBrPagamentosCancelarLotePagamentos;
+begin
+  if (not Assigned(fPagamentosCancelarSolicitado)) then
+    fPagamentosCancelarSolicitado := TACBrPagamentosCancelarLotePagamentos.Create;
+  Result := fPagamentosCancelarSolicitado;
+end;
+
+function TACBrPagamentosAPIClass.GetTransferenciaConsultada: TACBrPagamentoEspecificoTransferenciaResposta;
+begin
+  if (not Assigned(fTransferenciaConsultada)) then
+    fTransferenciaConsultada := TACBrPagamentoEspecificoTransferenciaResposta.Create;
+  Result := fTransferenciaConsultada;
+end;
+
+function TACBrPagamentosAPIClass.GetTransferenciaPixConsultada: TACBrPagamentoEspecificoPixResposta;
+begin
+  if (not Assigned(fTransferenciaPixConsultada)) then
+    fTransferenciaPixConsultada := TACBrPagamentoEspecificoPixResposta.Create;
+  Result := fTransferenciaPixConsultada;
 end;
 
 function TACBrPagamentosAPIClass.GetRespostaErros: TACBrPagamentosAPIErros;
@@ -409,6 +522,18 @@ begin
     fLoteGuiasCodigoBarrasConsultado.Free;
   if Assigned(fLoteGuiasCodigoBarrasSolicitado) then
     fLoteGuiasCodigoBarrasSolicitado.Free;
+  if Assigned(fLoteTransferenciasCriado) then
+    fLoteTransferenciasCriado.Free;
+  if Assigned(fLoteTransferenciasConsultado) then
+    fLoteTransferenciasConsultado.Free;
+  if Assigned(fLoteTransferenciasSolicitado) then
+    fLoteTransferenciasSolicitado.Free;
+  if Assigned(fLoteTransferenciaPixCriado) then
+    fLoteTransferenciaPixCriado.Free;
+  if Assigned(fLoteTransferenciaPixConsultado) then
+    fLoteTransferenciaPixConsultado.Free;
+  if Assigned(fLoteTransferenciaPixSolicitado) then
+    fLoteTransferenciaPixSolicitado.Free;
   if Assigned(fLoteGRUCriado) then
     fLoteGRUCriado.Free;
   if Assigned(fLoteGRUConsultado) then
@@ -437,6 +562,10 @@ begin
     fPagamentoBoletoConsultado.Free;
   if Assigned(fPagamentoGuiaCodigoBarrasConsultado) then
     fPagamentoGuiaCodigoBarrasConsultado.Free;
+  if Assigned(fTransferenciaConsultada) then
+    fTransferenciaConsultada.Free;
+  if Assigned(fTransferenciaPixConsultada) then
+    fTransferenciaPixConsultada.Free;
   inherited Destroy;
 end;
 
@@ -456,6 +585,18 @@ begin
     fLoteGuiasCodigoBarrasConsultado.Clear;
   if Assigned(fLoteGuiasCodigoBarrasSolicitado) then
     fLoteGuiasCodigoBarrasSolicitado.Clear;
+  if Assigned(fLoteTransferenciasCriado) then
+    fLoteTransferenciasCriado.Clear;
+  if Assigned(fLoteTransferenciasConsultado) then
+    fLoteTransferenciasConsultado.Clear;
+  if Assigned(fLoteTransferenciasSolicitado) then
+    fLoteTransferenciasSolicitado.Clear;
+  if Assigned(fLoteTransferenciaPixCriado) then
+    fLoteTransferenciaPixCriado.Clear;
+  if Assigned(fLoteTransferenciaPixConsultado) then
+    fLoteTransferenciaPixConsultado.Clear;
+  if Assigned(fLoteTransferenciaPixSolicitado) then
+    fLoteTransferenciaPixSolicitado.Clear;
   if Assigned(fLoteGRUCriado) then
     fLoteGRUCriado.Clear;
   if Assigned(fLoteGRUConsultado) then
@@ -484,6 +625,10 @@ begin
     fPagamentoBoletoConsultado.Clear;
   if Assigned(fPagamentoGuiaCodigoBarrasConsultado) then
     fPagamentoGuiaCodigoBarrasConsultado.Clear;
+  if Assigned(fTransferenciaConsultada) then
+    fTransferenciaConsultada.Clear;
+  if Assigned(fTransferenciaPixConsultada) then
+    fTransferenciaPixConsultada.Clear;
 end;
 
 function TACBrPagamentosAPIClass.BoletoSolicitarLotePagamentos: Boolean;
@@ -577,6 +722,48 @@ end;
 
 function TACBrPagamentosAPIClass.GPSConsultarPagamentoEspecifico(
   const aId: String): Boolean;
+begin
+  Result := False;
+  { abstract }
+end;
+
+function TACBrPagamentosAPIClass.TransferenciaSolicitarLote: Boolean;
+begin
+  Result := False;
+  { abstract }
+end;
+
+function TACBrPagamentosAPIClass.TransferenciaConsultarLote(const aId: String): Boolean;
+begin
+  Result := False;
+  { abstract }
+end;
+
+function TACBrPagamentosAPIClass.TransferenciaConsultar(const aId: String): Boolean;
+begin
+  Result := False;
+  { abstract }
+end;
+
+function TACBrPagamentosAPIClass.TransferenciaPixSolicitarLote: Boolean;
+begin
+  Result := False;
+  { abstract }
+end;
+
+function TACBrPagamentosAPIClass.TransferenciaPixConsultarLote(const aId: String): Boolean;
+begin
+  Result := False;
+  { abstract }
+end;
+
+function TACBrPagamentosAPIClass.TransferenciaPixConsultar(const aId: String): Boolean;
+begin
+  Result := False;
+  { abstract }
+end;
+
+function TACBrPagamentosAPIClass.PagamentosCancelar: Boolean;
 begin
   Result := False;
   { abstract }

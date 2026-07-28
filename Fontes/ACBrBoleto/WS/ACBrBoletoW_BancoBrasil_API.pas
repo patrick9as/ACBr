@@ -109,8 +109,8 @@ const
   C_URL_SANDBOX    = 'https://api.sandbox.bb.com.br/cobrancas/v2';
 
   C_URL_OAUTH_PROD    = 'https://oauth.bb.com.br/oauth/token';
+  C_URL_OAUTH_HOM     = 'https://oauth.hm.bb.com.br/oauth/token';
   C_URL_OAUTH_SANDBOX = 'https://oauth.sandbox.bb.com.br/oauth/token';
-  C_URL_OAUTH_HOM     = C_URL_OAUTH_SANDBOX;
 
 
   C_ACCEPT         = 'application/json';
@@ -262,7 +262,7 @@ begin
       if (Boleto.Cedente.Conta = EmptyStr) then
         raise EACBrBoletoWSException.Create(ClassName + ' Obrigatório informar o contaBeneficiario. ');
 
-      LDocumento := OnlyNumber(Boleto.Configuracoes.WebService.Filtro.cnpjCpfPagador);
+      LDocumento := OnlyCPFCNPJAlphaNum(Boleto.Configuracoes.WebService.Filtro.cnpjCpfPagador);
 
       LConsulta := TStringList.Create;
       try
@@ -604,8 +604,8 @@ begin
 
   LJsonPagadorObject := TACBrJSONObject.Create;
   try
-    LJsonPagadorObject.AddPair('tipoInscricao', StrToIntDef(IfThen(Length( OnlyNumber(ATitulo.Sacado.CNPJCPF)) = 11,'1','2'),0));
-    LJsonPagadorObject.AddPair('numeroInscricao', StrToInt64Def(OnlyNumber(ATitulo.Sacado.CNPJCPF),0));
+    LJsonPagadorObject.AddPair('tipoInscricao', StrToIntDef(IfThen(Length( OnlyCPFCNPJAlphaNum(ATitulo.Sacado.CNPJCPF)) = 11,'1','2'),0));
+    LJsonPagadorObject.AddPair('numeroInscricao', OnlyCPFCNPJAlphaNum(ATitulo.Sacado.CNPJCPF));
     LJsonPagadorObject.AddPair('nome', ATitulo.Sacado.NomeSacado);
     LJsonPagadorObject.AddPair('endereco', ATitulo.Sacado.Logradouro + ' ' + ATitulo.Sacado.Numero);
     LJsonPagadorObject.AddPair('cep', StrToInt64Def(OnlyNumber(ATitulo.Sacado.CEP),0));
@@ -629,8 +629,8 @@ begin
 
   LJsonSacadorAvalista := TACBrJSONObject.Create;
   try
-    LJsonSacadorAvalista.AddPair('tipoInscricao', StrToInt(IfThen( Length( OnlyNumber(ATitulo.Sacado.SacadoAvalista.CNPJCPF)) = 11,'1','2')));
-    LJsonSacadorAvalista.AddPair('numeroInscricao', StrToInt64Def(OnlyNumber(ATitulo.Sacado.SacadoAvalista.CNPJCPF),0));
+    LJsonSacadorAvalista.AddPair('tipoInscricao', StrToInt(IfThen( Length( OnlyCPFCNPJAlphaNum(ATitulo.Sacado.SacadoAvalista.CNPJCPF)) = 11,'1','2')));
+    LJsonSacadorAvalista.AddPair('numeroInscricao', OnlyCPFCNPJAlphaNum(ATitulo.Sacado.SacadoAvalista.CNPJCPF));
     LJsonSacadorAvalista.AddPair('nome', ATitulo.Sacado.SacadoAvalista.NomeAvalista);
   finally
     AJsonObject.AddPair('beneficiarioFinal', LJsonSacadorAvalista);
