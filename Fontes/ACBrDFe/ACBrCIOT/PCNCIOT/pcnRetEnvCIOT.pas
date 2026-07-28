@@ -37,8 +37,14 @@ unit pcnRetEnvCIOT;
 interface
 
 uses
-  SysUtils, Classes, pcnConversao, pcnLeitor, pcnCIOT, ACBrCIOTConversao,
-  synacode, StrUtils;
+  SysUtils,
+  StrUtils,
+  Classes,
+  pcnConversao,
+  pcnLeitor,
+  pcnCIOT,
+  ACBrCIOTConversao,
+  synacode;
 
 type
  TRetornoEnvio = class(TPersistent)
@@ -165,10 +171,10 @@ begin
           begin
             Proprietario.CNPJ := leitor.rCampo(tcStr, 'CNPJ');
 
-            sAux := leitor.rCampo(tcStr, 'TipoPessoa');
-            Proprietario.TipoPessoa := tpIndefinido;
-            if sAux <> '' then
-              Proprietario.TipoPessoa := StrToTipoPessoa(sAux);
+            //sAux := leitor.rCampo(tcStr, 'TipoPessoa');
+            //Proprietario.TipoPessoa := tpIndefinido;
+            //if sAux <> '' then
+            //  Proprietario.TipoPessoa := StrToTipoPessoa(sAux);
 
             Proprietario.RazaoSocial       := leitor.rCampo(tcStr, 'RazaoSocial');
             Proprietario.RNTRC             := leitor.rCampo(tcStr, 'RNTRC');

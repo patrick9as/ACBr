@@ -42,7 +42,8 @@ uses
   ACBrCTe.Classes,
   pcteProcCTe,
   pcnConversao,
-  pcteConversaoCTe;
+  pcteConversaoCTe,
+  ACBrUtil.Strings;
 
 type
   { TCTeIniWriter }
@@ -135,6 +136,8 @@ type
     procedure Gerar_IBSCBS_gIBSCBS_gTribReg(AINIRec: TMemIniFile; gTribRegular: TgTribRegular);
     procedure Gerar_IBSCBS_gIBSCBS_gTribCompraGov(AINIRec: TMemIniFile; gTribCompraGov: TgTribCompraGov);
     procedure Gerar_IBSCBS_gEstornoCred(AINIRec: TMemIniFile; gEstornoCred: TgEstornoCred);
+
+    procedure Gerar_IBSCBS_gALCZFMCBS(AINIRec: TMemIniFile; gALCZFMCBS: TgALCZFMCBS);
   public
     constructor Create(AOwner: TCTe); reintroduce;
 
@@ -532,6 +535,7 @@ begin
   AINIRec.WriteString('emit', 'xNome', Emit.xNome);
   AINIRec.WriteString('emit', 'xFant', Emit.xFant);
   AINIRec.WriteString('emit', 'CRT', CRTCTeToStr(Emit.CRT));
+  AINIRec.WriteString('emit', 'ISUFEmit', Emit.ISUFEmit);
 
   AINIRec.WriteString('emit', 'xLgr', Emit.enderEmit.xLgr);
   AINIRec.WriteString('emit', 'nro', Emit.enderEmit.nro);
@@ -1501,6 +1505,12 @@ end;
 
 procedure TCTeIniWriter.Gerar_Tomador(AINIRec: TMemIniFile; toma: TToma);
 begin
+  if FCTe.ide.tpCTe in [tcCTeSimp, tcSubstCTeSimpl] then
+  begin
+    AINIRec.WriteString('toma', 'toma', TpTomadorToStr(toma.toma));
+    AINIRec.WriteString('toma', 'indIEToma', indIEDestToStr(toma.indIEToma));
+  end;
+
   AINIRec.WriteString('toma', 'CNPJCPF', toma.CNPJCPF);
   AINIRec.WriteString('toma', 'IE', toma.IE);
   AINIRec.WriteString('toma', 'xNome', toma.xNome);
@@ -1889,8 +1899,8 @@ begin
     AINIRec.WriteInteger(sSecao, 'nPag', pgto[I].nPag);
     AINIRec.WriteString(sSecao, 'idTransacao', pgto[I].idTransacao);
     AINIRec.WriteString(sSecao, 'tpMeioPgto', pgto[I].tpMeioPgto);
-    AINIRec.WriteString(sSecao, 'CNPJReceb', pgto[I].CNPJReceb);
-    AINIRec.WriteString(sSecao, 'CNPJBasePSP', pgto[I].CNPJBasePSP);
+    AINIRec.WriteString(sSecao, 'CNPJReceb', OnlyCPFCNPJAlphaNum(pgto[I].CNPJReceb));
+    AINIRec.WriteString(sSecao, 'CNPJBasePSP', OnlyCPFCNPJAlphaNum(pgto[I].CNPJBasePSP));
   end;
 end;
 
@@ -1931,6 +1941,7 @@ begin
   Gerar_IBSCBS_gIBSCBS_gIBSUF(AINIRec, gIBSCBS.gIBSUF);
   Gerar_IBSCBS_gIBSCBS_gIBSMun(AINIRec, gIBSCBS.gIBSMun);
   Gerar_IBSCBS_gIBSCBS_gCBS(AINIRec, gIBSCBS.gCBS);
+  Gerar_IBSCBS_gALCZFMCBS(AINIRec, gIBSCBS.gCBS.gALCZFMCBS);
 
   if gIBSCBS.gTribRegular.pAliqEfetRegIBSUF > 0 then
     Gerar_IBSCBS_gIBSCBS_gTribReg(AINIRec, gIBSCBS.gTribRegular);
@@ -1952,6 +1963,7 @@ begin
   AINIRec.WriteFloat(sSecao, 'pDif', gIBSUF.gDif.pDif);
   AINIRec.WriteFloat(sSecao, 'vDif', gIBSUF.gDif.vDif);
 
+  AINIRec.WriteFloat(sSecao, 'pDevTrib', gIBSUF.gDevTrib.pDevTrib);
   AINIRec.WriteFloat(sSecao, 'vDevTrib', gIBSUF.gDevTrib.vDevTrib);
 
   AINIRec.WriteFloat(sSecao, 'pRedAliq', gIBSUF.gRed.pRedAliq);
@@ -2037,6 +2049,19 @@ begin
 
   AINIRec.WriteFloat(sSecao, 'vIBSEstCred', gEstornoCred.vIBSEstCred);
   AINIRec.WriteFloat(sSecao, 'vCBSEstCred', gEstornoCred.vCBSEstCred);
+end;
+
+procedure TCTeIniWriter.Gerar_IBSCBS_gALCZFMCBS(AINIRec: TMemIniFile;
+  gALCZFMCBS: TgALCZFMCBS);
+var
+  sSecao: String;
+begin
+  sSecao := 'gALCZFMCBS';
+
+  AINIRec.WriteString(sSecao, 'tpALCZFMCBS', tpALCZFMCBSToStr(gALCZFMCBS.tpALCZFMCBS) );
+  AINIRec.WriteString(sSecao, 'nProcSuframa', gALCZFMCBS.nProcSuframa);
+  AINIRec.WriteFloat( sSecao, 'pAliqEfetRegCBS', gALCZFMCBS.pAliqEfetRegCBS);
+  AINIRec.WriteFloat( sSecao, 'vTribRegCBS', gALCZFMCBS.vTribRegCBS);
 end;
 
 end.

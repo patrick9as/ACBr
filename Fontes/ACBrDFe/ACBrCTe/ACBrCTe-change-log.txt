@@ -44,6 +44,43 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+07/07/2026
+-- Diversos --
+[*] Ajustes para realizar a correta leitura do grupo <toma> do CT-e Simplificado.
+   Por: Italo Giurizzato Junior
+
+02/07/2026
+-- Diversos --
+[*] ACBr-9485 - Ajustes para atender a NT 2026/002 - versão 1.00 da Reforma Tributária.
+   Por: Italo Giurizzato Junior
+
+30/06/2026
+-- Diversas units ACBrCTe  --
+[*] Ajuste nas FormatarChaveAcesso que ja trata remover literal 
+   ACBr-9369
+   Por: Daniel Morais InfoCotidiano
+
+18/06/2026
+-- Diversas units ACBrCTe  --
+[*] Ajuste das chaves chaves e cnpj alfanumérico.
+   ACBr-9369
+   Por: Daniel Morais InfoCotidiano
+
+04/06/2026
+-- ACBrCTe.IniReader/ACBrCTe.EnvEvento --
+[*] Melhorias no código e utilização da função CarregarArquivo para ler um XML do disco.
+   Por: Italo Giurizzato Junior
+
+18/05/2026
+-- ACBrCTe.EnvEvento --
+[*] ACBr-9197: Alterado a forma de carregar o arquivo de TStringList para TMemoryStream.
+   Por: Italo Giurizzato Junior
+
+11/05/2026
+-- ACBrCTe.EnvEvento --
+[*] ACBr-9197: Remover os caracteres do UTF8-BOM do XML de evento antes da sua leitura.
+   Por: Italo Giurizzato Junior
+
 22/04/2026
 -- ACBrCTe.XmlReader --
 [-] A tag tpNav não é obrigatório no XML e estava causando problema de conversão.

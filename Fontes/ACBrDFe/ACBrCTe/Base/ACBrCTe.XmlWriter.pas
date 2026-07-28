@@ -262,6 +262,8 @@ type
     function Gerar_gTribCompraGov(gTribCompraGov: TgTribCompraGov): TACBrXmlNode;
     function Gerar_gEstornoCred(gEstornoCred: TgEstornoCred): TACBrXmlNode;
 
+    function Gerar_IBSCBS_gALCZFMCBS(gALCZFMCBS: TgALCZFMCBS): TACBrXmlNode;
+
     function GetOpcoes: TCTeXmlWriterOptions;
     procedure SetOpcoes(AValue: TCTeXmlWriterOptions);
 
@@ -337,7 +339,7 @@ end;
 
 function TCTeXmlWriter.ObterNomeArquivo: string;
 begin
-  Result := OnlyNumber(FCTe.infCTe.ID) + '-cte.xml';
+  Result := RemoverLiteralChave(FCTe.infCTe.ID) + '-cte.xml';
 end;
 
 procedure TCTeXmlWriter.SetOpcoes(AValue: TCTeXmlWriterOptions);
@@ -649,9 +651,9 @@ begin
   if (VersaoDF < ve300) then
   begin
     Result.AppendChild(AddNode(tcStr, '#021', 'refCTE', 44, 44, 0,
-                                       OnlyNumber(CTe.Ide.refCTE), DSC_REFCTE));
+                                       RemoverLiteralChave(CTe.Ide.refCTE), DSC_REFCTE));
 
-    if OnlyNumber(CTe.Ide.refCTe) <> '' then
+    if RemoverLiteralChave(CTe.Ide.refCTe) <> '' then
       if not ValidarChave(CTe.Ide.refCTe) then
         wAlerta('#021', 'refCTE', DSC_REFCTE, ERR_MSG_INVALIDO);
   end;
@@ -1033,6 +1035,9 @@ begin
     Result.AppendChild(AddNode(tcStr, '#103', 'CRT', 1, 1, Obrigatorio,
                                         CRTCTeToStr(CTe.Emit.CRT), DSC_CRTCTE));
   end;
+
+  Result.AppendChild(AddNode(tcStr, '#104', 'ISUFEmit', 8, 9, 0,
+                                              CTe.Emit.ISUFEmit, DSC_ISUFEMIT));
 end;
 
 function TCTeXmlWriter.Gerar_EnderEmit: TACBrXmlNode;
@@ -1467,11 +1472,13 @@ begin
   // Reforma Tributária
   if (VersaoDF >= ve400) and (CTe.imp.IBSCBS.CST <> cstNenhum) and
      (CTe.imp.IBSCBS.cClassTrib <> '') then
+  begin
     Result.AppendChild(Gerar_IBSCBS(CTe.imp.IBSCBS));
 
-  if (VersaoDF >= ve400) and (ModeloDF in [moCTe, moCTeOS]) then
-    Result.AppendChild(AddNode(tcDe2, '#250', 'vTotDFe', 1, 15, 0,
+    if (ModeloDF in [moCTe, moCTeOS]) then
+      Result.AppendChild(AddNode(tcDe2, '#250', 'vTotDFe', 1, 15, 1,
                                                  CTe.Imp.vTotDFe, DSC_VTOTDFE));
+  end;
 end;
 
 function TCTeXmlWriter.Gerar_ICMS: TACBrXmlNode;
@@ -1695,7 +1702,7 @@ end;
 function TCTeXmlWriter.Gerar_infTribFed: TACBrXmlNode;
   function InformarINSS: Integer;
   begin
-    if ((Length(OnlyNumber(Trim(CTe.toma.CNPJCPF))) = 14) or
+    if ((Length(OnlyCPFCNPJAlphaNum(Trim(CTe.toma.CNPJCPF))) = 14) or
         (CTe.toma.EnderToma.cPais <> 1058)) and
        (CTe.Ide.tpServ in [tsTranspPessoas, tsExcessoBagagem]) then
       Result := 1
@@ -1819,9 +1826,9 @@ begin
       if CTe.Ide.tpServ = tsTranspValores then
       begin
         Result.AppendChild(AddNode(tcStr, '#133', 'refCTeCanc', 44, 44, 0,
-                             OnlyNumber(CTe.infCTeNorm.refCTeCanc), DSC_CHAVE));
+                             RemoverLiteralChave(CTe.infCTeNorm.refCTeCanc), DSC_CHAVE));
 
-        if OnlyNumber(CTe.infCTeNorm.refCTeCanc) <> '' then
+        if RemoverLiteralChave(CTe.infCTeNorm.refCTeCanc) <> '' then
           if not ValidarChave(CTe.infCTeNorm.refCTeCanc) then
             wAlerta('#', 'refCTeCanc', DSC_REFNFE, ERR_MSG_INVALIDO);
       end;
@@ -1887,9 +1894,9 @@ begin
     end
     else
       Result[i].AppendChild(AddNode(tcStr, '#137', 'chBPe', 44, 44, 1,
-                     OnlyNumber(CTe.infCTeNorm.infDocRef[i].chBPe), DSC_CHBPE));
+                     RemoverLiteralChave(CTe.infCTeNorm.infDocRef[i].chBPe), DSC_CHBPE));
 
-    if OnlyNumber(CTe.infCTeNorm.infDocRef[i].chBPe) <> '' then
+    if RemoverLiteralChave(CTe.infCTeNorm.infDocRef[i].chBPe) <> '' then
       if not ValidarChave(CTe.infCTeNorm.infDocRef[i].chBPe) then
         wAlerta('#137', 'chBPe', DSC_CHBPE, ERR_MSG_INVALIDO);
   end;
@@ -2182,7 +2189,7 @@ begin
   begin
     Result[i] := FDocument.CreateElement('infNFe');
 
-    chave := OnlyNumber(InfNFe[i].chave);
+    chave := RemoverLiteralChave(InfNFe[i].chave);
 
     Result[i].AppendChild(AddNode(tcStr, '#298', xTagChave, 44, 44, 1,
                                                             chave, DSC_REFNFE));
@@ -2282,7 +2289,7 @@ begin
   begin
     Result[i] := FDocument.CreateElement('infDCe');
 
-    chave := OnlyNumber(InfDCe[i].chave);
+    chave := RemoverLiteralChave(InfDCe[i].chave);
 
     Result[i].AppendChild(AddNode(tcStr, '#298', 'chave', 44, 44, 1,
                                                             chave, DSC_REFNFE));
@@ -2427,19 +2434,19 @@ begin
 
     if (VersaoDF >= ve300) then
     begin
-      Result[i].AppendChild(AddNode(tcStr, '#359', 'chCTe', 44, 44, 1, 
-                                 OnlyNumber(idDocAntEle[i].chCTe), DSC_CHAVE));
+      Result[i].AppendChild(AddNode(tcStr, '#359', 'chCTe', 44, 44, 1,
+                                 RemoverLiteralChave(idDocAntEle[i].chCTe), DSC_CHAVE));
 
-      if OnlyNumber(idDocAntEle[i].chCTe) <> '' then
+      if RemoverLiteralChave(idDocAntEle[i].chCTe) <> '' then
         if not ValidarChave(idDocAntEle[i].chCTe) then
           wAlerta('#359', 'chCTe', DSC_REFCTE, ERR_MSG_INVALIDO);
     end
     else
     begin
       Result[i].AppendChild(AddNode(tcStr, '#359', 'chave', 44, 44, 1, 
-                                 OnlyNumber(idDocAntEle[i].chave), DSC_CHAVE));
+                                 RemoverLiteralChave(idDocAntEle[i].chave), DSC_CHAVE));
 
-      if OnlyNumber(idDocAntEle[i].chave) <> '' then
+      if RemoverLiteralChave(idDocAntEle[i].chave) <> '' then
         if not ValidarChave(idDocAntEle[i].chave) then
           wAlerta('#359', 'chave', DSC_REFCTE, ERR_MSG_INVALIDO);
     end;
@@ -2657,7 +2664,7 @@ begin
   begin
     Result := FDocument.CreateElement('infCteComp');
 
-    chave := OnlyNumber(CTe.infCTeComp.Chave);
+    chave := RemoverLiteralChave(CTe.infCTeComp.Chave);
     xTag := 'chCTe';
 
     if VersaoDF = ve200 then
@@ -2686,7 +2693,7 @@ begin
     begin
       Result[i] := FDocument.CreateElement('infCteComp');
 
-      chave := OnlyNumber(CTe.infCteComp10[i].chCTe);
+      chave := RemoverLiteralChave(CTe.infCteComp10[i].chCTe);
 
       Result[i].AppendChild(AddNode(tcStr, '#383', 'chCTe', 44, 44, 1,
                                                              chave, DSC_CHAVE));
@@ -2711,7 +2718,7 @@ begin
   begin
     Result := FDocument.CreateElement('infCteAnu');
 
-    chave := OnlyNumber(CTe.InfCTeAnu.chCTe);
+    chave := RemoverLiteralChave(CTe.InfCTeAnu.chCTe);
 
     Result.AppendChild(AddNode(tcStr, '#413', 'chCte', 44, 44, 1,
                                                              chave, DSC_CHAVE));
@@ -3216,7 +3223,7 @@ begin
   begin
     Result[i] := FDocument.CreateElement('infDocAnt');
 
-    chave := OnlyNumber(infDocAnt[i].chCTe);
+    chave := RemoverLiteralChave(infDocAnt[i].chCTe);
 
     Result[i].AppendChild(AddNode(tcStr, '#298', 'chCTe', 44, 44, 1,
                                                             chave, DSC_REFNFE));
@@ -3253,7 +3260,7 @@ begin
   begin
     Result[i] := FDocument.CreateElement('infNFeTranspParcial');
 
-    chave := OnlyNumber(infNFeTranspParcial[i].chNFe);
+    chave := RemoverLiteralChave(infNFeTranspParcial[i].chNFe);
 
     Result[i].AppendChild(AddNode(tcStr, '#298', 'chNFe', 44, 44, 1,
                                                             chave, DSC_REFNFE));
@@ -3969,7 +3976,7 @@ begin
   begin
     Result[i] := FDocument.CreateElement('infNFe');
 
-    chave := OnlyNumber(infNFe[i].chave);
+    chave := RemoverLiteralChave(infNFe[i].chave);
 
     Result[i].AppendChild(AddNode(tcStr, '#26', 'chave', 44, 44, 1,
                                                              chave, DSC_SERIE));
@@ -4062,7 +4069,7 @@ begin
   Result.AppendChild(AddNode(tcDe2, '#06', 'vFrete', 1, 15, 0,
                                             ferrov.trafMut.vFrete, DSC_VFRETE));
 
-  chave := OnlyNumber(ferrov.trafMut.chCTeFerroOrigem);
+  chave := RemoverLiteralChave(ferrov.trafMut.chCTeFerroOrigem);
 
   Result.AppendChild(AddNode(tcStr, '#07', 'chCTeFerroOrigem', 44, 44, 0,
                                             chave, DSC_CHAVE));
@@ -4335,7 +4342,7 @@ begin
   begin
     Result := FDocument.CreateElement('infCteSub');
 
-    chave :=  OnlyNumber(infCTeSub.chCte);
+    chave :=  RemoverLiteralChave(infCTeSub.chCte);
 
     Result.AppendChild(AddNode(tcStr, '#395', 'chCte', 44, 44, 1,
                                                              chave, DSC_CHAVE));
@@ -4359,7 +4366,7 @@ begin
         end
         else
         begin
-          chave :=  OnlyNumber(infCTeSub.refCteAnu);
+          chave :=  RemoverLiteralChave(infCTeSub.refCteAnu);
 
           Result.AppendChild(AddNode(tcStr, '#372', 'refCteAnu', 44, 44, 1,
                                                              chave, DSC_CHAVE));
@@ -4385,7 +4392,7 @@ begin
 
   if (trim(tomaICMS.refNFe) <> '') then
   begin
-    chave :=  OnlyNumber(tomaICMS.refNFe);
+    chave :=  RemoverLiteralChave(tomaICMS.refNFe);
 
     Result.AppendChild(AddNode(tcStr, '#397', 'refNFe', 44, 44, 1,
                                                              chave, DSC_CHAVE));
@@ -4402,7 +4409,7 @@ begin
     end
     else
     begin
-      chave :=  OnlyNumber(tomaICMS.refCte);
+      chave :=  RemoverLiteralChave(tomaICMS.refCte);
 
       Result.AppendChild(AddNode(tcStr, '#407', 'refCte', 44, 44, 1,
                                                              chave, DSC_CHAVE));
@@ -4446,7 +4453,7 @@ var
 begin
   Result := FDocument.CreateElement('tomaNaoICMS');
 
-  chave :=  OnlyNumber(tomaNaoICMS.refCteAnu);
+  chave :=  RemoverLiteralChave(tomaNaoICMS.refCteAnu);
 
   Result.AppendChild(AddNode(tcStr, '#409', 'refCteAnu', 44, 44, 1,
                                                          chave, DSC_CHAVE));
@@ -4490,10 +4497,10 @@ begin
                               CTe.pgtoVinc.pgto[i].tpMeioPgto, DSC_TPMEIOPGTO));
 
     Result[i].AppendChild(AddNode(tcStr, '#44', 'CNPJReceb', 14, 14, 1,
-                                CTe.pgtoVinc.pgto[i].CNPJReceb, DSC_CNPJRECEB));
+                                OnlyCPFCNPJAlphaNum(CTe.pgtoVinc.pgto[i].CNPJReceb), DSC_CNPJRECEB));
 
     Result[i].AppendChild(AddNode(tcStr, '#44', 'CNPJBasePSP', 8, 8, 1,
-                            CTe.pgtoVinc.pgto[i].CNPJBasePSP, DSC_CNPJBASEPSP));
+                            OnlyCPFCNPJAlphaNum(CTe.pgtoVinc.pgto[i].CNPJBasePSP), DSC_CNPJBASEPSP));
   end;
 
   if CTe.pgtoVinc.pgto.Count > 99 then
@@ -4680,7 +4687,7 @@ begin
 
   if Gerar then
   begin
-    FCTe.signature.URI := '#CTe' + OnlyNumber(CTe.infCTe.ID);
+    FCTe.signature.URI := '#CTe' + RemoverLiteralChave(CTe.infCTe.ID);
     xmlNode := GerarSignature(FCTe.signature);
     CTeNode.AppendChild(xmlNode);
   end;
@@ -4784,6 +4791,9 @@ function TCTeXmlWriter.Gerar_IBSCBS_gIBSCBS_gIBSUFMunCBS_gDevTrib(
 begin
   Result := CreateElement('gDevTrib');
 
+  Result.AppendChild(AddNode(tcDe2, '#12', 'pDevTrib', 1, 15, 0,
+                                               DevTrib.pDevTrib, DSC_PDEVTRIB));
+
   Result.AppendChild(AddNode(tcDe2, '#13', 'vDevTrib', 1, 15, 1,
                                                DevTrib.vDevTrib, DSC_VDEVTRIB));
 end;
@@ -4851,6 +4861,9 @@ begin
   if (gCBS.gRed.pRedAliq > 0) or (gCBS.gRed.pAliqEfet > 0) or
      (CTe.Ide.gCompraGov.pRedutor > 0) then
     Result.AppendChild(Gerar_IBSCBS_gIBSCBS_gIBSUFMunCBS_gRed(gCBS.gRed));
+
+  if (gCBS.gALCZFMCBS.pAliqEfetRegCBS > 0) or (gCBS.gALCZFMCBS.vTribRegCBS > 0) then
+    Result.AppendChild(Gerar_IBSCBS_gALCZFMCBS(gCBS.gALCZFMCBS));
 
   Result.AppendChild(AddNode(tcDe2, '#61', 'vCBS', 1, 15, 1,
                                                           gCBS.vCBS, DSC_VCBS));
@@ -4932,6 +4945,24 @@ begin
 
   Result.AppendChild(AddNode(tcDe2, '#1', 'vCBSEstCred', 1, 15, 1,
                                     gEstornoCred.vCBSEstCred, DSC_VCBSESTCRED));
+end;
+
+function TCTeXmlWriter.Gerar_IBSCBS_gALCZFMCBS(
+  gALCZFMCBS: TgALCZFMCBS): TACBrXmlNode;
+begin
+  Result := FDocument.CreateElement('gALCZFMCBS');
+
+  Result.AppendChild(AddNode(tcStr, 'UB66b', 'tpALCZFMCBS', 1, 1, 1,
+                    tpALCZFMCBSToStr(gALCZFMCBS.tpALCZFMCBS), DSC_TPALCZFMCBS));
+
+  Result.AppendChild(AddNode(tcStr, 'UB66c', 'nProcSuframa', 8, 12, 0,
+                                    gALCZFMCBS.nProcSuframa, DSC_NPROCSUFRAMA));
+
+  Result.AppendChild(AddNode(tcDe4, 'UB66d', 'pAliqEfetRegCBS', 1, 7, 1,
+                              gALCZFMCBS.pAliqEfetRegCBS, DSC_PALIQEFETREGCBS));
+
+  Result.AppendChild(AddNode(tcDe2, 'UB66e', 'vTribRegCBS', 1, 15, 1,
+                                      gALCZFMCBS.vTribRegCBS, DSC_VTRIBREGCBS));
 end;
 
 end.

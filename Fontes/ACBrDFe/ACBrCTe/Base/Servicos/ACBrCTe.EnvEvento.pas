@@ -45,8 +45,6 @@ uses
   {$IfEnd}
   ACBrDFeConsts,
   pcteConversaoCTe,
-  pcnSignature,
-//  ACBrDFeComum.SignatureClass,
   ACBrCTe.Consts,
   ACBrCTe.EventoClass,
   ACBrBase,
@@ -156,11 +154,13 @@ implementation
 
 uses
   IniFiles,
+  synautil,
   ACBrDFeUtil,
   ACBrUtil.Base,
   ACBrUtil.Strings,
   ACBrUtil.DateTime,
   ACBrUtil.FilesIO,
+  ACBrUtil.XMLHTML,
   ACBrCTe.RetEnvEvento;
 
 { TEventoCTe }
@@ -737,11 +737,11 @@ var
 begin
   if VersaoDF >= ve400 then
     Evento[Idx].InfEvento.id := 'ID' + Evento[Idx].InfEvento.TipoEvento +
-                             OnlyNumber(Evento[Idx].InfEvento.chCTe) +
+                             RemoverLiteralChave(Evento[Idx].InfEvento.chCTe) +
                              Format('%.3d', [Evento[Idx].InfEvento.nSeqEvento])
   else
     Evento[Idx].InfEvento.id := 'ID' + Evento[Idx].InfEvento.TipoEvento +
-                             OnlyNumber(Evento[Idx].InfEvento.chCTe) +
+                             RemoverLiteralChave(Evento[Idx].InfEvento.chCTe) +
                              Format('%.2d', [Evento[Idx].InfEvento.nSeqEvento]);
 
   if Length(Evento[Idx].InfEvento.id) < 54 then
@@ -756,7 +756,7 @@ begin
   Result.AppendChild(AddNode(tcStr, 'HP09', 'tpAmb', 1, 1, 1,
                            TpAmbToStr(Evento[Idx].InfEvento.tpAmb), DSC_TPAMB));
 
-  sDoc := OnlyNumber(Evento[Idx].InfEvento.CNPJ);
+  sDoc := OnlyCPFCNPJAlphaNum(Evento[Idx].InfEvento.CNPJ);
 
   if EstaVazio(sDoc) then
     sDoc := ExtrairCNPJCPFChaveAcesso(Evento[Idx].InfEvento.chCTe);
@@ -851,16 +851,10 @@ end;
 
 function TEventoCTe.LerXML(const CaminhoArquivo: string): Boolean;
 var
-  ArqEvento: TStringList;
+  aXml: string;
 begin
-  ArqEvento := TStringList.Create;
-
-  try
-    ArqEvento.LoadFromFile(CaminhoArquivo);
-    Result := LerXMLFromString(ArqEvento.Text);
-  finally
-    ArqEvento.Free;
-  end;
+  aXml := CarregarArquivo(CaminhoArquivo);
+  Result := LerXMLFromString(aXml);
 end;
 
 function TEventoCTe.LerXMLFromString(const AXML: string): Boolean;
@@ -871,7 +865,7 @@ begin
   RetEventoCTe := TRetEventoCTe.Create;
 
   try
-    RetEventoCTe.XmlRetorno := AXML;
+    RetEventoCTe.XmlRetorno := RemoverUTF8Bom(AXML);
     Result := RetEventoCTe.LerXml;
 
     with FEvento.New do
@@ -927,8 +921,8 @@ begin
       infEvento.DetEvento.pgto.nPag := RetEventoCTe.InfEvento.DetEvento.pgto.nPag;
       infEvento.DetEvento.pgto.idTransacao := RetEventoCTe.InfEvento.DetEvento.pgto.idTransacao;
       infEvento.DetEvento.pgto.tpMeioPgto := RetEventoCTe.InfEvento.DetEvento.pgto.tpMeioPgto;
-      infEvento.DetEvento.pgto.CNPJReceb := RetEventoCTe.InfEvento.DetEvento.pgto.CNPJReceb;
-      infEvento.DetEvento.pgto.CNPJBasePSP := RetEventoCTe.InfEvento.DetEvento.pgto.CNPJBasePSP;
+      infEvento.DetEvento.pgto.CNPJReceb := OnlyCPFCNPJAlphaNum(RetEventoCTe.InfEvento.DetEvento.pgto.CNPJReceb);
+      infEvento.DetEvento.pgto.CNPJBasePSP := OnlyCPFCNPJAlphaNum(RetEventoCTe.InfEvento.DetEvento.pgto.CNPJBasePSP);
 
       // teCancVinculoPgto
       infEvento.DetEvento.nProtVincPgto := RetEventoCTe.InfEvento.DetEvento.nProtVincPgto;
@@ -1254,8 +1248,8 @@ begin
               infEvento.detEvento.pgto.nPag := INIRec.ReadInteger(sSecao, 'nPag', 0);
               infEvento.detEvento.pgto.idTransacao := INIRec.ReadString(sSecao, 'idTransacao', '');
               infEvento.detEvento.pgto.tpMeioPgto := INIRec.ReadString(sSecao, 'tpMeioPgto', '');
-              infEvento.detEvento.pgto.CNPJReceb := INIRec.ReadString(sSecao, 'CNPJReceb', '');
-              infEvento.detEvento.pgto.CNPJBasePSP := INIRec.ReadString(sSecao, 'CNPJBasePSP', '');
+              infEvento.detEvento.pgto.CNPJReceb := OnlyCPFCNPJAlphaNum(INIRec.ReadString(sSecao, 'CNPJReceb', ''));
+              infEvento.detEvento.pgto.CNPJBasePSP := OnlyCPFCNPJAlphaNum(INIRec.ReadString(sSecao, 'CNPJBasePSP', ''));
             end;
 
           teCancVinculoPgto:
@@ -1342,10 +1336,10 @@ begin
                                               pgto.tpMeioPgto, DSC_TPMEIOPGTO));
 
   Result.AppendChild(AddNode(tcStr, '#44', 'CNPJReceb', 14, 14, 1,
-                                                pgto.CNPJReceb, DSC_CNPJRECEB));
+                                                OnlyCPFCNPJAlphaNum(pgto.CNPJReceb), DSC_CNPJRECEB));
 
   Result.AppendChild(AddNode(tcStr, '#44', 'CNPJBasePSP', 8, 8, 1,
-                                            pgto.CNPJBasePSP, DSC_CNPJBASEPSP));
+                                            OnlyCPFCNPJAlphaNum(pgto.CNPJBasePSP), DSC_CNPJBASEPSP));
 end;
 
 function TEventoCTe.Gerar_Evento_CancelamentoVinculoPagamento(

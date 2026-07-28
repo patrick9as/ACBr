@@ -38,6 +38,45 @@ Símbolo : Significado
 [*]     : Recurso modificado/melhorado
 [-]     : Correção de Bug (assim esperamos)
 
+15/07/2026
+-- Frm_ACBrCIOT --
+[*] ACBR-9243: Ajustes no programa de exemplo com valores válidos na emissão de CIOT
+  Por: Renato Rubinho
+
+06/07/2026
+-- pcnCIOTW_Pamcard.pas --
+[*] ACBr-9369 - Ajustado CNPJ para alfanumericos
+   Por: Larissa Santos
+
+03/06/2026
+-- ACBrCIOTContratos, ACBrCIOTIniReader, ACBrCIOTIniWriter, ACBrCIOTConversao, ACBr_CIOT.dpk, ACBr_CIOT.lpk --
+[+] ACBR-9356 - Implementada leitura e escrita de inis dos métodos.
+-- Frm_ACBrCIOT, Frm_ACBrCIOT --
+[+] ACBR-9356 - Nova aba outros nos programas de exemplo em Delphi e Lazarus com opções para gravar e ler ini.
+  Por: Renato Rubinho
+
+28/05/2026
+-- ACBrCIOTContratos/pcnCIOTW/pcnCIOTW_eFrete --
+[*] ACBR-9425 - Possível solução para o problema de versão invalida.
+  Por: Italo Giurizzato Junior
+
+25/05/2026
+-- ACBrCIOTServicos.ini/ACBrCIOTConversao/pcnCIOTW_eFrete --
+[*] Alterações nas urls do eFrete para versão 8 e ajustes na geração do XML.
+  Por: Marcio Bar
+  
+20/05/2026
+-- ACBrCIOTWebServices, pcnCIOTW_eFrete, ACBrCIOTServicos.ini --
+[*] Alterações nas urls do eFrete na versão 8
+  Por: Pablo Cerbaro
+  
+18/05/2026
+-- pcnCIOT, pcnCIOTW_eFrete --
+[*] ACBR-9371 - eFrete v8 - MP 1.343/2026 - novas regras do CIOT e Piso Mínimo de Frete
+-- Frm_ACBrCIOT --
+[*] ACBR-9371 - Alimentados novas propriedades, corrigida consulta de município por Descrição e implementada geração do XML em disco para análise
+  Por: Renato Rubinho
+
 12/11/2020
 -- pcnCIOT/pcnCIOTW_Pamcard --
 [*] Mais alguns ajustes para funcionar o integrador Pamcard.
