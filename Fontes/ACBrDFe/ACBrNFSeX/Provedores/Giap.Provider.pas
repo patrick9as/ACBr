@@ -51,6 +51,8 @@ type
   TACBrNFSeXWebserviceGiap = class(TACBrNFSeXWebserviceNoSoap)
   protected
     procedure SetHeaders(aHeaderReq: THTTPHeader); override;
+    function DefinirMsgEnvio(const Message, SoapAction, SoapHeader: string;
+                                  namespace: array of string): string; override;
   public
     function Recepcionar(const ACabecalho, AMSG: String): string; override;
     function ConsultarNFSePorRps(const ACabecalho, AMSG: String): string; override;
@@ -217,31 +219,11 @@ end;
 procedure TACBrNFSeProviderGiap.ProcessarMensagemErros(
   RootNode: TACBrXmlNode; Response: TNFSeWebserviceResponse;
   const AListTag, AMessageTag: string);
-
-  function ObterValor(ANode: TACBrXmlNode; const ATag: string): string;
-  var
-    Node: TACBrXmlNode;
-    Attr: TACBrXmlAttribute;
-  begin
-    Attr := ANode.Attributes.Items[ATag];
-    if Attr <> nil then
-      Result := ObterConteudoTag(Attr)
-    else
-    begin
-      Node := ANode.Childrens.FindAnyNs(ATag);
-      if Node <> nil then
-        Result := ObterConteudoTag(Node, tcStr)
-      else
-        Result := '';
-    end;
-  end;
-
 var
-  I: Integer;
-  ANode: TACBrXmlNode;
-  ANodeArray: TACBrXmlNodeArray;
+  ANode, MsgNode: TACBrXmlNode;
   AErro: TNFSeEventoCollectionItem;
-  Codigo, Descricao: string;
+  Status: Integer;
+  Descricao: string;
 begin
   ANode := RootNode.Document.Root.Childrens.FindAnyNs('notaFiscal');
 
@@ -249,25 +231,25 @@ begin
     ANode := RootNode.Document.Root;
 
   if not Assigned(ANode) then
-    exit;
+    Exit;
 
-  if ObterConteudoTag(ANode.Childrens.FindAnyNs('statusEmissao'), tcInt) <> 200 then
+  Status := ObterConteudoTag(ANode.Childrens.FindAnyNs('statusEmissao'), tcInt);
+
+  if Status <> 200 then
   begin
-    ANodeArray := ANode.Childrens.FindAllAnyNs('messages');
+    MsgNode := ANode.Childrens.FindAnyNs('messages');
 
-    for I := Low(ANodeArray) to High(ANodeArray) do
+    if Assigned(MsgNode) then
     begin
-      ANode := ANodeArray[I];
+      Descricao := ObterConteudoTag(MsgNode, tcStr);
 
-      Codigo := ObterValor(ANode, 'code');
-      Descricao := ObterValor(ANode, 'message');
-
-      if (Codigo = '') and (Descricao = '') then Continue;
-
-      AErro := Response.Erros.New;
-      AErro.Codigo := ObterValor(ANode, 'code');
-      AErro.Descricao := ObterValor(ANode, 'message');
-      AErro.Correcao := '';
+      if Descricao <> '' then
+      begin
+        AErro := Response.Erros.New;
+        AErro.Codigo := IntToStr(Status);
+        AErro.Descricao := Descricao;
+        AErro.Correcao := '';
+      end;
     end;
   end;
 end;
@@ -486,7 +468,8 @@ begin
         Response.Link := ObterConteudoTag(ANode.Childrens.FindAnyNs('wsLink'), tcStr);
 
         sData := ObterConteudoTag(ANode.Childrens.FindAnyNs('dataEmissao'), tcStr);
-        Response.Data := StrToDate(sData);
+        if Trim(sData) <> '' then
+          Response.Data := StrToDate(sData);
       end;
     except
       on E:Exception do
@@ -616,6 +599,22 @@ begin
   aHeaderReq.AddHeader('postman-token', Token);
 end;
 
+function TACBrNFSeXWebserviceGiap.DefinirMsgEnvio(const Message, SoapAction,
+  SoapHeader: string; namespace: array of string): string;
+begin
+  // O servidor da Giap (ORDS Oracle) interpreta o corpo da requisição como
+  // Windows-1252, não UTF-8. Por isso não aplicamos o
+  // 'string(NativeStringToUTF8(Result))' usado pela classe base, que
+  // produzia bytes UTF-8 e fazia o servidor renderizar acentos como mojibake
+  // (ex: "MÃO" virava "MÃ.O" no PDF).
+  Result := Message;
+
+  FPHttpClient := FPDFeOwner.SSL.SSLHttpClass;
+
+  FPHttpClient.Clear;
+  FPHttpClient.HeaderReq.AddHeader('SOAPAction', SoapAction);
+end;
+
 function TACBrNFSeXWebserviceGiap.TratarXmlRetornado(
   const aXML: string): string;
 begin
@@ -623,7 +622,6 @@ begin
   begin
     Result := inherited TratarXmlRetornado(aXML);
 
-//    Result := String(NativeStringToUTF8(Result));
     Result := ParseText(Result);
     Result := RemoverDeclaracaoXML(Result);
     Result := RemoverIdentacao(Result);
@@ -643,7 +641,6 @@ begin
               '</nfeReposta>';
 
     Result := ParseText(Result);
-//    Result := String(NativeStringToUTF8(Result));
   end;
 end;
 

@@ -89,6 +89,7 @@ uses
   Adm.Provider,
   ADPM.Provider,
   AEG.Provider,
+  Agape.Provider,
   Asten.Provider,
   BWSistemas.Provider,
   Centi.Provider,
@@ -110,6 +111,7 @@ uses
   GestaoISS.Provider,
   Giss.Provider,
   GovDigital.Provider,
+  HM2.Provider,
   iiBrasil.Provider,
   Isaneto.Provider,
   ISSCamacari.Provider,
@@ -146,6 +148,7 @@ uses
   Sudoeste.Provider,
   SystemPro.Provider,
   SysISS.Provider,
+  TaxTecnologia.Provider,
   TcheInfo.Provider,
   Tecnos.Provider,
   Tributus.Provider,
@@ -247,6 +250,7 @@ begin
       proAdm:   Result := TACBrNFSeProviderAdm201.Create(ACBrNFSe);
       proADPM:  Result := TACBrNFSeProviderADPM203.Create(ACBrNFSe);
       proAEG:   Result := TACBrNFSeProviderAEG202.Create(ACBrNFSe);
+      proAgape: Result := TACBrNFSeProviderAgape200.Create(ACBrNFSe);
       proAgili: Result := TACBrNFSeProviderAgili.Create(ACBrNFSe);
       proAspec: Result := TACBrNFSeProviderAspec.Create(ACBrNFSe);
 
@@ -302,11 +306,16 @@ begin
 
       proDBSeller:
         begin
-          case Versao of
-            ve100: Result := TACBrNFSeProviderDBSeller.Create(ACBrNFSe);
-            ve204: Result := TACBrNFSeProviderDBSeller204.Create(ACBrNFSe);
+          if APIPropria then
+            Result := TACBrNFSeProviderDBSellerAPIPropria.Create(ACBrNFSe)
           else
-            Result := nil;
+          begin
+            case Versao of
+              ve100: Result := TACBrNFSeProviderDBSeller.Create(ACBrNFSe);
+              ve204: Result := TACBrNFSeProviderDBSeller204.Create(ACBrNFSe);
+            else
+              Result := nil;
+            end;
           end;
         end;
 
@@ -325,12 +334,17 @@ begin
 
       proDSF:
         begin
-          case Versao of
-            ve100: Result := TACBrNFSeProviderDSF.Create(ACBrNFSe);
-            ve200: Result := TACBrNFSeProviderDSF200.Create(ACBrNFSe);
-            ve203: Result := TACBrNFSeProviderDSF203.Create(ACBrNFSe);
+          if APIPropria then
+            Result := TACBrNFSeProviderDSFAPIPropria.Create(ACBrNFSe)
           else
-            Result := nil;
+          begin
+            case Versao of
+              ve100: Result := TACBrNFSeProviderDSF.Create(ACBrNFSe);
+              ve200: Result := TACBrNFSeProviderDSF200.Create(ACBrNFSe);
+              ve203: Result := TACBrNFSeProviderDSF203.Create(ACBrNFSe);
+            else
+              Result := nil;
+            end;
           end;
         end;
 
@@ -409,8 +423,12 @@ begin
       proFiorilli:
         begin
           if APIPropria then
-            Result := TACBrNFSeProviderFiorilliAPIPropria.Create(ACBrNFSe)
-          else
+          begin
+            case Versao of
+              ve100: Result := TACBrNFSeProviderFiorilliAPIPropria.Create(ACBrNFSe);
+              ve101: Result := TACBrNFSeProviderFiorilliAPIPropria101.Create(ACBrNFSe);
+            end;
+          end else
             Result := TACBrNFSeProviderFiorilli200.Create(ACBrNFSe);
         end;
 
@@ -445,9 +463,10 @@ begin
           end;
         end;
 
-      proGoverna:    Result := TACBrNFSeProviderGoverna.Create(ACBrNFSe);
-      proHorus:      Result := TACBrNFSeProviderHorus.Create(ACBrNFSe);
-      proiiBrasil:   Result := TACBrNFSeProvideriiBrasil204.Create(ACBrNFSe);
+      proGoverna:  Result := TACBrNFSeProviderGoverna.Create(ACBrNFSe);
+      proHM2:      Result := TACBrNFSeProviderHM2203.Create(ACBrNFSe);
+      proHorus:    Result := TACBrNFSeProviderHorus.Create(ACBrNFSe);
+      proiiBrasil: Result := TACBrNFSeProvideriiBrasil204.Create(ACBrNFSe);
 
       proInfisc:
         begin
@@ -754,7 +773,14 @@ begin
 
       proSmart4:   Result := TACBrNFSeProviderSmart4.Create(ACBrNFSe);
       proSoftPlan: Result := TACBrNFSeProviderSoftPlan.Create(ACBrNFSe);
-      proSpeedGov: Result := TACBrNFSeProviderSpeedGov.Create(ACBrNFSe);
+
+      proSpeedGov:
+        begin
+          if APIPropria then
+            Result := TACBrNFSeProviderSpeedGovAPIPropria.Create(ACBrNFSe)
+          else
+            Result := TACBrNFSeProviderSpeedGov.Create(ACBrNFSe);
+        end;
 
       proSSInformatica:
         Result := TACBrNFSeProviderSSInformatica203.Create(ACBrNFSe);
@@ -771,6 +797,10 @@ begin
 
       proSystemPro: Result := TACBrNFSeProviderSystemPro201.Create(ACBrNFSe);
       proSysISS:    Result := TACBrNFSeProviderSysISS202.Create(ACBrNFSe);
+
+      proTaxTecnologia:
+        Result := TACBrNFSeProviderTaxTecnologia204.Create(ACBrNFSe);
+
       proTcheInfo:  Result := TACBrNFSeProviderTcheInfo204.Create(ACBrNFSe);
       proTecnos:    Result := TACBrNFSeProviderTecnos201.Create(ACBrNFSe);
       proThema:     Result := TACBrNFSeProviderThema.Create(ACBrNFSe);

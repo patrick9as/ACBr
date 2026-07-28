@@ -362,7 +362,8 @@ begin
     // Homologação: 01/10/2015
     // Produção: 03/11/2015
 
-    if (NFe.Ide.modelo = 65) then
+    if (NFe.Ide.modelo = 65) or
+       ((NFe.Ide.modelo = 55) and (NFe.Ide.tpImp = tiSimplificadoTipo2)) then
     begin
       with TACBrNFe(TNotasFiscais(Collection).ACBrNFe) do
       begin
@@ -797,13 +798,13 @@ var
 begin
   DecodeDate(nfe.ide.dEmi, wAno, wMes, wDia);
 
-  chaveNFe := OnlyNumber(NFe.infNFe.ID);
+  chaveNFe := RemoverLiteralChave(NFe.infNFe.ID);
   {(*}
   Result := not
     ((Copy(chaveNFe, 1, 2) <> IntToStrZero(NFe.Ide.cUF, 2)) or
     (Copy(chaveNFe, 3, 2)  <> Copy(FormatFloat('0000', wAno), 3, 2)) or
     (Copy(chaveNFe, 5, 2)  <> FormatFloat('00', wMes)) or
-    (Copy(chaveNFe, 7, 14) <> PadLeft(OnlyNumber(NFe.Emit.CNPJCPF), 14, '0')) or
+    (Copy(chaveNFe, 7, 14) <> PadLeft(OnlyCPFCNPJAlphaNum(NFe.Emit.CNPJCPF), 14, '0')) or
     (Copy(chaveNFe, 21, 2) <> IntToStrZero(NFe.Ide.modelo, 2)) or
     (Copy(chaveNFe, 23, 3) <> IntToStrZero(NFe.Ide.serie, 3)) or
     (Copy(chaveNFe, 26, 9) <> IntToStrZero(NFe.Ide.nNF, 9)) or
@@ -842,7 +843,7 @@ end;
 
 function NotaFiscal.GetNumID: String;
 begin
-  Result := OnlyNumber(NFe.infNFe.ID);
+  Result := RemoverLiteralChave(NFe.infNFe.ID);
 end;
 
 function NotaFiscal.GetXMLAssinado: String;

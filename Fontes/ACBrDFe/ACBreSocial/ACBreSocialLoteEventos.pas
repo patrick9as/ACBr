@@ -65,7 +65,8 @@ uses
   ACBreSocialConfiguracoes, 
 	ACBreSocialEventos,
   pcesCommon, 
-	pcesConversaoeSocial;
+	pcesConversaoeSocial,
+  ACBrDFeUtil;
 
 type
 
@@ -488,7 +489,7 @@ begin
   Result := EmptyStr;
   Ini := pos('Id=', XML);
   if ini > 0 then
-    Result := 'ID' + OnlyNumber(Copy(XML, Ini + 4, 38));
+    Result := Copy(XML, Ini + 4, 36)
 end;
 
 procedure TItemLoteEventos.SetXML(const Value: AnsiString);

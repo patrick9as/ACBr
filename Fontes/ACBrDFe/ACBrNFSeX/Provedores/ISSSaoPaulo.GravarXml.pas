@@ -61,7 +61,7 @@ type
 
     function GerarXMLIBSCBS(IBSCBS: TIBSCBSDPS): TACBrXmlNode; override;
     function GerarXMLDestinatario(Dest: TDadosdaPessoa): TACBrXmlNode; override;
-    function GerarXMLImovel(Imovel: TDadosimovel): TACBrXmlNode;
+    function GerarXMLImovel(Imovel: TDadosimovel): TACBrXmlNode; override;
   public
     function GerarXml: Boolean; override;
 
@@ -193,6 +193,7 @@ end;
 
 function TNFSeW_ISSSaoPaulo.GerarXml: Boolean;
 var
+  Aliquota: Double;
   LNFSeNode, LNode: TACBrXmlNode;
   LTipoRPS, LSituacao, LAliquota, LISSRetido, LISSRetidoInter: String;
 begin
@@ -260,7 +261,9 @@ begin
 
   if NFSe.Servico.Valores.Aliquota > 0 then
   begin
-    LAliquota := FormatFloat('0.00##', NFSe.Servico.Valores.Aliquota / 100);
+    Aliquota := NormatizarAliquota(NFSe.Servico.Valores.Aliquota, True);
+
+    LAliquota := FormatFloat('0.00##', Aliquota);
 
     LAliquota := StringReplace(LAliquota, ',', '.', [rfReplaceAll]);
   end
@@ -332,7 +335,8 @@ begin
 
   if (NFSe.TipoTributacaoRPS <> ttTribnoMun) and
      (NFSe.TipoTributacaoRPS <> ttTribnoMunIsento) and
-     (NFSe.TipoTributacaoRPS <> ttTribnoMunImune) then
+     (NFSe.TipoTributacaoRPS <> ttTribnoMunImune) and
+     (NFSe.TipoTributacaoRPS <> ttTribnoMunSuspensa) then
     LNFSeNode.AppendChild(AddNode(tcStr, '#1', 'MunicipioPrestacao', 1, 7, 0,
                                              NFSe.Servico.CodigoMunicipio, ''));
 
@@ -341,6 +345,9 @@ begin
 
   LNFSeNode.AppendChild(AddNode(tcDe2, '#1', 'ValorTotalRecebido', 1, 15, 0,
                                           NFSe.Servico.ValorTotalRecebido, ''));
+
+  LNFSeNode.AppendChild(AddNode(tcStr, '#1', 'RetencaoPisCofins', 1, 1, 0,
+         tpRetPisCofinsToStr(NFSe.Servico.Valores.tribFed.tpRetPisCofins), ''));
 
   if VersaoNFSe = ve200 then
   begin
@@ -369,8 +376,8 @@ begin
       LNFSeNode.AppendChild(AddNode(tcStr, '#1', 'ExigibilidadeSuspensa', 1, 1, 1,
                                                                       '0', ''));
 
-    LNFSeNode.AppendChild(AddNode(tcStr, '#1', 'PagamentoParceladoAntecipado', 1, 1, 1,
-                                                                      '0', ''));
+    LNFSeNode.AppendChild(AddNode(tcStr, '#1', 'PagamentoParceladoAntecipado', 1, 1, 0,
+                                                                      '', ''));
   end;
 
   LNFSeNode.AppendChild(AddNode(tcStr, '#1', 'NCM', 1, 15, 0,

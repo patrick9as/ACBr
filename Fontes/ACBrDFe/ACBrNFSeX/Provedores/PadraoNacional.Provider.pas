@@ -665,8 +665,8 @@ begin
     if chNFSe = '' then
     begin
       AErro := Response.Erros.New;
-      AErro.Codigo := Cod004;
-      AErro.Descricao := ACBrStr(Desc004);
+      AErro.Codigo := Cod118;
+      AErro.Descricao := ACBrStr(Desc118);
     end;
 
     if Response.Erros.Count > 0 then Exit;
@@ -734,7 +734,7 @@ begin
                    xAutorEvento +
                    '<chNFSe>' + chNFSe + '</chNFSe>' +
                    '<' + tpEventoToStr(tpEvento) + '>' +
-                     '<xDesc>' + tpEventoToDesc(tpEvento) + '</xDesc>' +
+                     '<xDesc>' + ACBrStr(tpEventoToDesc(tpEvento)) + '</xDesc>' +
                      xCamposEvento +
                    '</' + tpEventoToStr(tpEvento) + '>' +
                  '</infPedReg>' +

@@ -63,7 +63,7 @@ type
     function GerarServico: TACBrXmlNode; override;
     function GerarConstrucaoCivil: TACBrXmlNode; override;
     function GerarEnderecoTomador : TACBrXmlNode; override;
-    function GerarComercioExterior: TACBrXmlNode;
+    function GerarComercioExterior: TACBrXmlNode; override;
 
     procedure GerarINISecaoParcelas(const AINIRec: TMemIniFile); override;
   end;
@@ -352,9 +352,6 @@ begin
 end;
 
 function TNFSeW_Publica.GerarEnderecoTomador: TACBrXmlNode;
-var
-  nodeArray: TACBrXmlNodeArray;
-  i: Integer;
 begin
   // Em conformidade com a versão 1 do layout da ABRASF não deve ser alterado
   Result := nil;
@@ -493,7 +490,7 @@ begin
   Result.AppendChild(AddNode(tcInt, '#1', 'CodigoMunicipioLocalPrestacao', 7, 7, 0,
                                NFSe.Servico.CodigoMunicipioLocalPrestacao, ''));
 
-  Result.AppendChild(AddNode(tcInt, '#1', 'CodigoPaisLocalPrestacao', 4, 4, 0,
+  Result.AppendChild(AddNode(tcInt, '#1', 'CodigoPais', 4, 4, 0,
                                NFSe.Prestador.Endereco.CodigoPais, DSC_CPAIS));
 
   Result.AppendChild(AddNode(tcStr, '#1', 'cNBS', 1, 10, 0,
