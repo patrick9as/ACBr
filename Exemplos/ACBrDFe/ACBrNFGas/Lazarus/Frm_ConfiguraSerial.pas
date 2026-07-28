@@ -36,14 +36,7 @@ interface
 
 uses
   ACBrDevice,
-  ACBrDeviceSerial,
-  Classes,
-  SysUtils,
-  Forms,
-  Controls,
-  Graphics,
-  Dialogs,
-  StdCtrls,
+  Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls,
   Buttons;
 
 type
@@ -90,6 +83,9 @@ var
   frmConfiguraSerial: TfrmConfiguraSerial;
 
 implementation
+
+uses
+  ACBrDeviceSerial;
 
 {$R *.lfm}
 

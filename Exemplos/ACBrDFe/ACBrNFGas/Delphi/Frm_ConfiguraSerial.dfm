@@ -1,94 +1,95 @@
 object frmConfiguraSerial: TfrmConfiguraSerial
   Left = 322
-  Height = 438
   Top = 155
-  Width = 234
   ActiveControl = cmbPortaSerial
   BorderIcons = [biSystemMenu]
   BorderStyle = bsToolWindow
   Caption = 'Porta Serial'
-  ClientHeight = 438
-  ClientWidth = 234
+  ClientHeight = 350
+  ClientWidth = 187
   Color = clBtnFace
-  Constraints.MinHeight = 438
-  Constraints.MinWidth = 225
-  DesignTimePPI = 120
-  Font.CharSet = ANSI_CHARSET
+  Constraints.MinHeight = 350
+  Constraints.MinWidth = 180
+  Font.Charset = ANSI_CHARSET
   Font.Color = clBlack
-  Font.Height = -14
+  Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Pitch = fpVariable
+  Font.Style = []
+  OldCreateOrder = True
   Position = poOwnerFormCenter
-  LCLVersion = '4.6.0.0'
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnShow = FormShow
+  PixelsPerInch = 96
+  TextHeight = 13
   object Label5: TLabel
-    Left = 10
-    Height = 13
-    Top = 65
+    Left = 8
+    Top = 52
     Width = 136
+    Height = 13
     Caption = '&Baud rate (Bits por Segundo)'
     Color = clBtnFace
     FocusControl = cmbBaudRate
     ParentColor = False
   end
   object Label6: TLabel
-    Left = 10
-    Height = 13
-    Top = 121
+    Left = 8
+    Top = 97
     Width = 118
+    Height = 13
     Caption = '&Data Bits (Bits de Dados)'
     Color = clBtnFace
     FocusControl = cmbDataBits
     ParentColor = False
   end
   object Label7: TLabel
-    Left = 10
-    Height = 13
-    Top = 176
+    Left = 8
+    Top = 141
     Width = 77
+    Height = 13
     Caption = '&Parity (Paridade)'
     Color = clBtnFace
     FocusControl = cmbParity
     ParentColor = False
   end
   object Label11: TLabel
-    Left = 10
-    Height = 13
-    Top = 230
+    Left = 8
+    Top = 184
     Width = 120
+    Height = 13
     Caption = '&Stop Bits (Bits de Parada)'
     Color = clBtnFace
     FocusControl = cmbStopBits
     ParentColor = False
   end
   object Label8: TLabel
-    Left = 10
-    Height = 13
-    Top = 289
+    Left = 8
+    Top = 231
     Width = 154
+    Height = 13
     Caption = '&Handshaking (Controle de Fluxo)'
     Color = clBtnFace
     FocusControl = cmbHandShaking
     ParentColor = False
   end
   object Label4: TLabel
-    Left = 10
-    Height = 13
-    Top = 14
+    Left = 8
+    Top = 11
     Width = 54
+    Height = 13
     Caption = '&Porta Serial'
     Color = clBtnFace
     FocusControl = cmbPortaSerial
     ParentColor = False
   end
   object cmbBaudRate: TComboBox
-    Left = 10
+    Left = 8
+    Top = 70
+    Width = 161
     Height = 21
-    Top = 88
-    Width = 201
-    ItemHeight = 13
+    TabOrder = 1
+    OnChange = cmbBaudRateChange
     Items.Strings = (
       '110'
       '300'
@@ -102,91 +103,82 @@ object frmConfiguraSerial: TfrmConfiguraSerial
       '38400'
       '56000'
       '57600'
-      '115200'
-    )
-    TabOrder = 1
-    OnChange = cmbBaudRateChange
+      '115200')
   end
   object cmbDataBits: TComboBox
-    Left = 10
+    Left = 8
+    Top = 113
+    Width = 161
     Height = 21
-    Top = 141
-    Width = 201
-    ItemHeight = 13
+    Style = csDropDownList
     ItemIndex = 3
+    TabOrder = 2
+    Text = '8'
+    OnChange = cmbDataBitsChange
     Items.Strings = (
       '5'
       '6'
       '7'
-      '8'
-    )
-    Style = csDropDownList
-    TabOrder = 2
-    Text = '8'
-    OnChange = cmbDataBitsChange
+      '8')
   end
   object cmbParity: TComboBox
-    Left = 10
+    Left = 8
+    Top = 158
+    Width = 161
     Height = 21
-    Top = 198
-    Width = 201
-    ItemHeight = 13
+    Style = csDropDownList
     ItemIndex = 0
+    TabOrder = 3
+    Text = 'None'
+    OnChange = cmbParityChange
     Items.Strings = (
       'None'
       'Odd'
       'Even'
       'Mark'
-      'Space'
-    )
-    Style = csDropDownList
-    TabOrder = 3
-    Text = 'None'
-    OnChange = cmbParityChange
+      'Space')
   end
   object cmbStopBits: TComboBox
-    Left = 10
+    Left = 8
+    Top = 202
+    Width = 161
     Height = 21
-    Top = 252
-    Width = 201
-    ItemHeight = 13
-    ItemIndex = 0
-    Items.Strings = (
-      '1'
-      '1,5'
-      '2'
-    )
     Style = csDropDownList
+    ItemIndex = 0
     TabOrder = 4
     Text = '1'
     OnChange = cmbStopBitsChange
+    Items.Strings = (
+      '1'
+      '1,5'
+      '2')
   end
   object cmbHandShaking: TComboBox
-    Left = 10
+    Left = 8
+    Top = 249
+    Width = 161
     Height = 21
-    Top = 311
-    Width = 201
-    ItemHeight = 13
+    Style = csDropDownList
     ItemIndex = 0
+    TabOrder = 5
+    Text = 'Nenhum'
+    OnChange = cmbHandShakingChange
     Items.Strings = (
       'Nenhum'
       'XON/XOFF'
       'RTS/CTS'
-      'DTR/DSR'
-    )
-    Style = csDropDownList
-    TabOrder = 5
-    Text = 'Nenhum'
-    OnChange = cmbHandShakingChange
+      'DTR/DSR')
   end
   object cmbPortaSerial: TComboBox
-    Left = 10
+    Left = 8
+    Top = 27
+    Width = 161
     Height = 21
-    Top = 34
-    Width = 201
     DropDownCount = 10
-    ItemHeight = 13
     ItemIndex = 0
+    TabOrder = 0
+    Text = 'COM1'
+    OnChange = cmbPortaSerialChange
     Items.Strings = (
       'COM1'
       'COM2'
@@ -196,44 +188,42 @@ object frmConfiguraSerial: TfrmConfiguraSerial
       'COM6'
       'COM7'
       'COM8'
-      'COM9'
-    )
-    TabOrder = 0
-    Text = 'COM1'
-    OnChange = cmbPortaSerialChange
+      'COM9')
   end
   object BitBtn1: TBitBtn
-    Left = 10
-    Height = 31
-    Top = 390
-    Width = 94
+    Left = 8
+    Top = 312
+    Width = 75
+    Height = 25
     Caption = '&OK'
     Kind = bkOK
+    NumGlyphs = 2
     TabOrder = 6
   end
   object BitBtn2: TBitBtn
-    Left = 118
-    Height = 31
-    Top = 390
-    Width = 94
+    Left = 94
+    Top = 312
+    Width = 75
+    Height = 25
     Caption = 'Cancelar'
     Kind = bkCancel
+    NumGlyphs = 2
     TabOrder = 7
   end
   object chHardFlow: TCheckBox
-    Left = 10
-    Height = 19
-    Top = 350
+    Left = 8
+    Top = 280
     Width = 71
+    Height = 19
     Caption = 'HardFlow'
     TabOrder = 8
     OnClick = chHardFlowClick
   end
   object chSoftFlow: TCheckBox
-    Left = 120
-    Height = 19
-    Top = 350
+    Left = 96
+    Top = 280
     Width = 67
+    Height = 19
     Caption = 'SoftFlow'
     TabOrder = 9
     OnClick = chSoftFlowClick
